@@ -1,5 +1,47 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    $isHttps = (
+        (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
+        (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443)
+    );
+
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.cookie_httponly', '1');
+    ini_set('session.cookie_secure', $isHttps ? '1' : '0');
+    ini_set('session.cookie_samesite', 'Lax');
+
+    session_name('itx_admin');
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'domain'   => '',
+        'secure'   => $isHttps,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+
+    session_start();
+}
+
+// Invalidate idle admin sessions after 2 hours.
+if (!empty($_SESSION['admin_id'])) {
+    $maxIdle = 7200;
+    $last    = (int)($_SESSION['last_activity'] ?? time());
+    if ((time() - $last) > $maxIdle) {
+        $_SESSION = [];
+        if (ini_get('session.use_cookies')) {
+            $p = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], (bool)$p['secure'], (bool)$p['httponly']);
+        }
+        session_destroy();
+        session_start();
+        session_regenerate_id(true);
+        $_SESSION['flash_msg']  = 'انتهت الجلسة بسبب عدم النشاط. الرجاء تسجيل الدخول مرة أخرى.';
+        $_SESSION['flash_type'] = 'danger';
+    } else {
+        $_SESSION['last_activity'] = time();
+    }
+}
 
 // ── Path constants ────────────────────────────────────────
 // __FILE__ = /itx/admin/includes/auth.php
@@ -110,19 +152,41 @@ function save_settings(array $kv): void {
 }
 
 // ── Image upload ──────────────────────────────────────────
+
+/**
+ * Delete a locally-uploaded image file (only from inside /uploads/).
+ * External URLs and empty values are silently ignored.
+ */
+function delete_old_image(string $path): void {
+    if (empty($path) || preg_match('#^https?://#', $path)) return;
+    $uploads_real = realpath(ROOT_PATH . '/uploads');
+    if (!$uploads_real) return;
+    $abs = realpath(ROOT_PATH . '/' . ltrim(str_replace(['../', '.\\', '../'], '', $path), '/'));
+    if ($abs && strpos($abs, $uploads_real) === 0 && is_file($abs)) {
+        @unlink($abs);
+    }
+}
+
 function handle_image_input(
     string $fileKey,
     string $urlKey,
     string $existingVal,
     string $subdir = 'uploads'
 ): string {
+    $new = null;
     // 1. File upload takes priority
     if (!empty($_FILES[$fileKey]['name']) && $_FILES[$fileKey]['error'] === UPLOAD_ERR_OK) {
-        return upload_file($_FILES[$fileKey], $subdir);
+        $new = upload_file($_FILES[$fileKey], $subdir);
+    } else {
+        // 2. URL input
+        $url = trim($_POST[$urlKey] ?? '');
+        if ($url !== '') $new = $url;
     }
-    // 2. URL input
-    $url = trim($_POST[$urlKey] ?? '');
-    if ($url !== '') return $url;
+    // If we got a new value and it differs → delete the old local file
+    if ($new !== null) {
+        if ($new !== $existingVal) delete_old_image($existingVal);
+        return $new;
+    }
     // 3. Keep existing
     return $existingVal;
 }

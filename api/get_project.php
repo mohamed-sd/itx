@@ -1,14 +1,17 @@
 <?php
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-
 require_once __DIR__ . '/../config/db.php';
+
+while (ob_get_level() > 0) {
+    ob_end_clean();
+}
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
 if ($id < 1) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Invalid ID']);
+    echo json_encode(['success' => false, 'message' => 'Invalid ID'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -31,7 +34,7 @@ try {
 
     if (!$project) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Not found']);
+        echo json_encode(['success' => false, 'message' => 'Not found'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
@@ -45,8 +48,8 @@ try {
     $mStmt->execute([$id]);
     $project['media'] = $mStmt->fetchAll();
 
-    echo json_encode(['success' => true, 'data' => $project]);
+    echo json_encode(['success' => true, 'data' => $project], JSON_UNESCAPED_UNICODE);
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Database error']);
+    echo json_encode(['success' => false, 'message' => 'Database error'], JSON_UNESCAPED_UNICODE);
 }

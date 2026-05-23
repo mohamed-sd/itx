@@ -11,7 +11,10 @@ $_NAV = [
   ['p'=>'testimonials','i'=>'fas fa-comments',        'l'=>'آراء العملاء',       's'=>null],
   ['p'=>'contact',    'i'=>'fas fa-phone-alt',        'l'=>'التواصل',            's'=>null],
   ['p'=>'social',     'i'=>'fas fa-share-alt',        'l'=>'السوشيال ميديا',    's'=>null],
-  ['p'=>'pages',      'i'=>'fas fa-file-alt',         'l'=>'الصفحات (خصوصية/شروط)', 's'=>null],
+  ['p'=>'pages',         'i'=>'fas fa-file-alt',         'l'=>'الصفحات (خصوصية/شروط)', 's'=>null],
+  ['p'=>'blog',          'i'=>'fas fa-newspaper',        'l'=>'المدونة',                's'=>null],
+  ['p'=>null,            'i'=>null,                      'l'=>'الأدوات',                's'=>'section'],
+  ['p'=>'image_cleaner', 'i'=>'fas fa-broom',            'l'=>'منظف الصور',             's'=>null],
 ];
 
 function layout_start(string $title, string $currentPage): void {

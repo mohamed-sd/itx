@@ -30,7 +30,13 @@ if ($db_ok) {
     try { $testimonials = $pdo->query("SELECT * FROM testimonials WHERE status='active' ORDER BY sort_order")->fetchAll(); } catch (\Exception $ex) {}
     try { $contact      = $pdo->query("SELECT * FROM contact_info WHERE id=1")->fetch() ?: [];             } catch (\Exception $ex) {}
     try { $socials      = $pdo->query("SELECT * FROM social_media WHERE status='active' ORDER BY sort_order")->fetchAll(); } catch (\Exception $ex) {}
+    try { $blog_preview = $pdo->query("SELECT p.*, c.name AS cat_name, c.slug AS cat_slug
+                                        FROM blog_posts p
+                                        LEFT JOIN blog_categories c ON c.id=p.category_id
+                                        WHERE p.status='published'
+                                        ORDER BY p.created_at DESC LIMIT 6")->fetchAll(); } catch (\Exception $ex) {}
 }
+$blog_preview = $blog_preview ?? [];
 
 // ── Computed values ───────────────────────────────────────
 $site_name    = $gs('site_name',        'ITX');
@@ -38,6 +44,7 @@ $site_tagline = $gs('site_tagline',     'حلول برمجية وتركيب كا
 $site_desc    = $gs('site_description', 'شركة ' . $site_name . ' للحلول الرقمية - متخصصون في تطوير المواقع والتطبيقات وتركيب أنظمة كاميرات الأمان');
 $site_kws     = $gs('site_keywords',    'تطوير المواقع, تطبيقات الجوال, كاميرات المراقبة, أنظمة الأمان');
 $logo_path    = $gs('site_logo',        'logo.jpeg');
+$logo_url     = site_media_url($logo_path, 'logo.jpeg');
 $wa_number    = $gs('whatsapp_number',  '') ?: ($contact['whatsapp'] ?? '966501234567');
 $wa_msg       = $gs('whatsapp_msg',     'مرحباً، أود التواصل معكم');
 $footer_text  = $gs('footer_text',      'جميع الحقوق محفوظة | شركة ' . $site_name . ' للحلول الرقمية');
@@ -53,6 +60,7 @@ $h_btn2l = $hero['btn2_link'] ?? '#contact';
 $ab_heading = $about['heading'] ?? ('مرحباً بك في ' . $site_name);
 $ab_content = $about['content'] ?? '';
 $ab_image   = $about['image']   ?? 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&h=400&fit=crop';
+$ab_image_url = site_media_url($ab_image);
 $ab_skills  = array_filter(array_map('trim', explode(',', $about['skills'] ?? '')));
 
 $ct_phone   = $contact['phone']     ?? '';
@@ -77,8 +85,10 @@ function nl2p(string $text): string {
     <meta name="author"      content="<?= e($site_name) ?>">
     <meta property="og:title"       content="<?= e($site_name) ?> | <?= e($site_tagline) ?>">
     <meta property="og:description" content="<?= e($site_desc) ?>">
-    <meta property="og:image"       content="<?= e($logo_path) ?>">
+    <meta property="og:image"       content="<?= e($logo_url) ?>">
     <title><?= e($site_name) ?> | <?= e($site_tagline) ?></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
@@ -223,6 +233,24 @@ function nl2p(string $text): string {
         .footer-links a { color: #0FECC1; text-decoration: none; margin: 0 1rem; font-size: .9rem; transition: opacity .2s; }
         .footer-links a:hover { opacity: .75; }
 
+        /* ── Blog Preview ── */
+        .blog-preview { padding: 6rem 2rem; background: #f8f9fa; }
+        .blog-container { max-width: 1200px; margin: 0 auto; }
+        .blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px,1fr)); gap: 2rem; margin-top: 2rem; }
+        .blog-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,.07); transition: all .3s ease; text-decoration: none; color: inherit; display: block; border: 1px solid #f0f0f0; }
+        .blog-card:hover { transform: translateY(-6px); box-shadow: 0 14px 40px rgba(63,77,96,.15); }
+        .blog-card-img { height: 200px; overflow: hidden; position: relative; background: linear-gradient(135deg,#3F4D60,#2FA8B9); }
+        .blog-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+        .blog-card:hover .blog-card-img img { transform: scale(1.06); }
+        .blog-cat-badge { position: absolute; top: 10px; right: 10px; background: rgba(15,236,193,.92); color: #1a2535; padding: 3px 10px; border-radius: 50px; font-size: .72rem; font-weight: 700; }
+        .blog-no-img { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.4); font-size: 2.5rem; }
+        .blog-card-body { padding: 1.3rem; }
+        .blog-card-body h3 { font-size: 1rem; font-weight: 700; color: #222; margin-bottom: .5rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .blog-card-body p  { color: #777; font-size: .87rem; line-height: 1.65; margin-bottom: .8rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .blog-card-meta { display: flex; justify-content: space-between; align-items: center; font-size: .8rem; color: #bbb; }
+        .blog-more { text-align: center; margin-top: 2.5rem; }
+        @media(max-width:768px){ .blog-grid { grid-template-columns: 1fr; } .blog-preview { padding: 4rem 1rem; } }
+
         /* ── Back to top ── */
         .back-to-top { position: fixed; bottom: 2rem; right: 2rem; width: 50px; height: 50px; background: linear-gradient(135deg,#3F4D60 0%,#0FECC1 100%); color: white; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; z-index: 998; box-shadow: 0 4px 12px rgba(63,77,96,.3); transition: all .3s ease; border: none; }
         .back-to-top.show { display: flex; }
@@ -358,13 +386,14 @@ function nl2p(string $text): string {
     <header>
         <nav>
             <div class="logo">
-                <img src="<?= e($logo_path) ?>" alt="<?= e($site_name) ?> Logo" title="<?= e($site_name) ?> - <?= e($site_tagline) ?>">
+                <img src="<?= e($logo_url) ?>" alt="<?= e($site_name) ?> Logo" title="<?= e($site_name) ?> - <?= e($site_tagline) ?>" loading="eager" decoding="async" fetchpriority="high">
             </div>
             <ul class="nav-links">
                 <li><a href="#home">الرئيسية</a></li>
                 <li><a href="#about">عنا</a></li>
                 <li><a href="#services">الخدمات</a></li>
                 <li><a href="#our-works">أعمالنا</a></li>
+                <li><a href="blog.php">المدونة</a></li>
                 <li><a href="#contact">التواصل</a></li>
             </ul>
             <button class="mobile-menu"><i class="fas fa-bars"></i></button>
@@ -408,7 +437,7 @@ function nl2p(string $text): string {
                 <?php endif; ?>
             </div>
             <div class="about-image">
-                <img src="<?= e($ab_image) ?>" alt="<?= e($ab_heading) ?>">
+                <img src="<?= e($ab_image_url) ?>" alt="<?= e($ab_heading) ?>" loading="lazy" decoding="async">
             </div>
         </div>
     </section>
@@ -505,6 +534,45 @@ function nl2p(string $text): string {
             </div>
         </div>
     </div>
+
+    <!-- ── Blog Preview ── -->
+    <?php if ($blog_preview): ?>
+    <section class="blog-preview" id="blog">
+        <div class="blog-container">
+            <h2 class="section-title">آخر المقالات</h2>
+            <div class="blog-grid">
+                <?php foreach ($blog_preview as $bp): ?>
+                <a href="blog-post.php?slug=<?= urlencode($bp['slug']) ?>" class="blog-card">
+                    <div class="blog-card-img">
+                        <?php if ($bp['thumbnail']): ?>
+                            <img src="<?= e(site_media_url($bp['thumbnail'])) ?>" alt="<?= e($bp['title']) ?>" loading="lazy" decoding="async"
+                                 onerror="this.parentElement.innerHTML='<div class=\'blog-no-img\'><i class=\'fas fa-newspaper\'></i></div>'">
+                        <?php else: ?>
+                            <div class="blog-no-img"><i class="fas fa-newspaper"></i></div>
+                        <?php endif; ?>
+                        <?php if ($bp['cat_name']): ?>
+                            <span class="blog-cat-badge"><?= e($bp['cat_name']) ?></span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="blog-card-body">
+                        <h3><?= e($bp['title']) ?></h3>
+                        <p><?= e($bp['excerpt']) ?></p>
+                        <div class="blog-card-meta">
+                            <span><i class="fas fa-calendar-alt"></i> <?= date('d/m/Y', strtotime($bp['created_at'])) ?></span>
+                            <span><i class="fas fa-eye"></i> <?= number_format((int)$bp['views']) ?></span>
+                        </div>
+                    </div>
+                </a>
+                <?php endforeach; ?>
+            </div>
+            <div class="blog-more">
+                <a href="blog.php" class="btn btn-primary">
+                    <i class="fas fa-newspaper"></i> عرض جميع المقالات
+                </a>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
 
     <!-- ── Testimonials ── -->
     <section class="testimonials" id="testimonials">

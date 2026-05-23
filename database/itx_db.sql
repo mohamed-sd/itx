@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: May 23, 2026 at 08:14 AM
+-- Generation Time: May 23, 2026 at 09:24 AM
 -- Server version: 8.4.7
 -- PHP Version: 8.3.31
 
@@ -68,6 +68,75 @@ CREATE TABLE IF NOT EXISTS `admins` (
 
 INSERT INTO `admins` (`id`, `username`, `password`, `name`, `created_at`) VALUES
 (1, 'admin', '$2y$12$Fvq.Vr9/sdEEIxXS49PPr.3ipXrjAGcqKByRfqLT8XI3fMqZ41duu', 'مدير النظام', '2026-05-23 08:01:15');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `blog_categories`
+--
+
+DROP TABLE IF EXISTS `blog_categories`;
+CREATE TABLE IF NOT EXISTS `blog_categories` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sort_order` int DEFAULT '0',
+  `status` enum('active','inactive') COLLATE utf8mb4_unicode_ci DEFAULT 'active',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `slug` (`slug`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `blog_categories`
+--
+
+INSERT INTO `blog_categories` (`id`, `name`, `slug`, `sort_order`, `status`) VALUES
+(1, 'تقنية وبرمجة', 'tech', 1, 'active'),
+(2, 'أمن المعلومات', 'security', 2, 'active'),
+(3, 'كاميرات المراقبة', 'cameras', 3, 'active'),
+(4, 'نصائح وإرشادات', 'tips', 4, 'active');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `blog_posts`
+--
+
+DROP TABLE IF EXISTS `blog_posts`;
+CREATE TABLE IF NOT EXISTS `blog_posts` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `category_id` int DEFAULT NULL,
+  `title` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `excerpt` text COLLATE utf8mb4_unicode_ci,
+  `content` longtext COLLATE utf8mb4_unicode_ci,
+  `thumbnail` varchar(600) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `author` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT 'فريق ITX',
+  `tags` text COLLATE utf8mb4_unicode_ci,
+  `meta_title` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `meta_description` text COLLATE utf8mb4_unicode_ci,
+  `status` enum('published','draft') COLLATE utf8mb4_unicode_ci DEFAULT 'published',
+  `views` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `slug` (`slug`),
+  KEY `idx_status` (`status`),
+  KEY `idx_cat` (`category_id`),
+  KEY `idx_created` (`created_at`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `blog_posts`
+--
+
+INSERT INTO `blog_posts` (`id`, `category_id`, `title`, `slug`, `excerpt`, `content`, `thumbnail`, `author`, `tags`, `meta_title`, `meta_description`, `status`, `views`, `created_at`, `updated_at`) VALUES
+(1, 1, 'أفضل تقنيات تطوير المواقع في 2025', 'best-web-technologies-2025', 'نستعرض في هذا المقال أبرز تقنيات تطوير المواقع التي يجب على كل مطور أن يعرفها خلال عام 2025.', '<h2>مقدمة</h2><p>تشهد صناعة تطوير الويب تطوراً متسارعاً، مع ظهور تقنيات وأدوات جديدة باستمرار. في هذا المقال نستعرض أبرز ما يجب على كل مطور إتقانه.</p><h2>أبرز التقنيات</h2><ul><li><strong>React / Next.js</strong> — لبناء واجهات مستخدم سريعة وتفاعلية.</li><li><strong>Tailwind CSS</strong> — لتصميم واجهات بصرية متميزة بسرعة.</li><li><strong>PHP 8+ / Laravel</strong> — للتطوير الخلفي الموثوق.</li></ul><p>الاستثمار في تعلم هذه التقنيات يضمن تميزك في سوق العمل.</p>', 'uploads/blog/img_6a116ec4c1a025.32939844.jpeg', 'فريق ITX', 'برمجة,تطوير,مواقع,تقنية', 'أفضل تقنيات تطوير المواقع في 2025 | ITX', 'دليل شامل لأفضل تقنيات تطوير المواقع الإلكترونية لعام 2025', 'published', 3, '2026-05-23 09:04:45', '2026-05-23 09:21:04'),
+(2, 3, 'كيف تختار نظام كاميرات المراقبة المناسب لعملك', 'how-to-choose-cctv-system', 'دليل شامل لمساعدتك في اختيار نظام كاميرات المراقبة الأنسب لاحتياجاتك وميزانيتك.', '<h2>لماذا كاميرات المراقبة مهمة؟</h2><p>توفر كاميرات المراقبة الحديثة أماناً متكاملاً وتردع المتسللين وتساعد على متابعة العمليات.</p><h2>العوامل الأساسية عند الاختيار</h2><ul><li>عدد الكاميرات المطلوبة وأماكن تركيبها.</li><li>دقة الصورة (Full HD أو 4K).</li><li>الرؤية الليلية.</li><li>سعة التخزين ومدة الاحتفاظ بالتسجيلات.</li></ul><p>تواصل مع فريق ITX للحصول على استشارة مجانية.</p>', NULL, 'فريق ITX', 'كاميرات,أمن,مراقبة,حماية', 'كيف تختار نظام كاميرات المراقبة | ITX', 'دليل اختيار أفضل نظام كاميرات مراقبة لمنشأتك', 'published', 1, '2026-05-23 09:04:45', '2026-05-23 09:10:21'),
+(3, 2, 'أهمية الأمن الرقمي للشركات الصغيرة والمتوسطة', 'digital-security-sme', 'تعرف على أهمية الأمن الرقمي وكيف يحمي شركتك من التهديدات الإلكترونية المتزايدة.', '<h2>التهديدات الرقمية في تزايد مستمر</h2><p>الاختراقات الإلكترونية لا تستهدف الشركات الكبرى فقط، بل أصبحت الشركات الصغيرة هدفاً رئيسياً.</p><h2>خطوات بسيطة للحماية</h2><ul><li>استخدام كلمات مرور قوية وفريدة لكل حساب.</li><li>تحديث الأنظمة والتطبيقات بانتظام.</li><li>تفعيل المصادقة الثنائية.</li><li>النسخ الاحتياطي الدوري للبيانات.</li></ul>', NULL, 'فريق ITX', 'أمن,حماية,شركات,رقمي', 'الأمن الرقمي للشركات الصغيرة | ITX', 'أهمية الأمن الرقمي وحماية بيانات الشركات الصغيرة والمتوسطة', 'published', 0, '2026-05-23 09:04:45', '2026-05-23 09:04:45'),
+(4, 4, 'نصائح لتسريع موقعك الإلكتروني وتحسين تجربة المستخدم', 'website-speed-optimization-tips', 'أسرع موقعك وحسّن تجربة المستخدم باتباع هذه النصائح العملية السهلة التطبيق.', '<h2>لماذا السرعة مهمة؟</h2><p>المواقع البطيئة تخسر زوارها. 53% من المستخدمين يغادرون الموقع إذا لم يُحمّل خلال 3 ثوانٍ.</p><h2>نصائح للتسريع</h2><ul><li>ضغط الصور وتحويلها إلى صيغة WebP.</li><li>تفعيل التخزين المؤقت (Caching).</li><li>تقليص ملفات CSS و JavaScript.</li><li>استخدام شبكة توصيل محتوى (CDN).</li></ul>', NULL, 'فريق ITX', 'سرعة,موقع,تحسين,SEO,تجربة', 'نصائح تسريع الموقع وتحسين تجربة المستخدم | ITX', 'نصائح عملية لتسريع موقعك الإلكتروني وتحسين تجربة المستخدم', 'published', 1, '2026-05-23 09:04:45', '2026-05-23 09:21:54'),
+(5, 1, 'دليل البدء في تطوير تطبيقات الجوال', 'mobile-app-development-guide', 'كل ما تحتاج معرفته للبدء في رحلة تطوير تطبيقات الجوال من الصفر حتى النشر.', '<h2>اختيار المسار الصحيح</h2><p>هل تريد تطبيقاً أصلياً (Native) أم هجيناً (Hybrid)؟ يعتمد القرار على ميزانيتك وجمهورك المستهدف.</p><h2>الأدوات الموصى بها</h2><ul><li><strong>React Native</strong> — للتطوير الهجين عالي الأداء.</li><li><strong>Flutter</strong> — لتصاميم جميلة على منصتين بوقت واحد.</li><li><strong>Swift / Kotlin</strong> — للتطوير الأصلي.</li></ul>', NULL, 'فريق ITX', 'تطبيقات,جوال,تطوير,برمجة', 'دليل البدء في تطوير تطبيقات الجوال | ITX', 'دليل شامل للبدء في تطوير تطبيقات الجوال لنظامي Android و iOS', 'published', 3, '2026-05-23 09:04:45', '2026-05-23 09:21:46'),
+(6, 4, 'كيف تكتب محتوى يجذب العملاء لموقعك', 'content-writing-to-attract-clients', 'محتوى موقعك هو أول ما يراه عميلك المحتمل. تعلم كيف تكتب محتوى مقنعاً يحوّل الزوار إلى عملاء.', '<h2>أهمية المحتوى الجيد</h2><p>المحتوى الجيد يبني الثقة، يحسّن ترتيبك في محركات البحث، ويقنع الزوار باتخاذ قرار الشراء.</p><h2>مبادئ الكتابة الفعّالة</h2><ul><li>تحدث بلغة عميلك لا بلغة التقنيين.</li><li>ركز على الفوائد لا على المميزات.</li><li>استخدم عناوين واضحة وفقرات قصيرة.</li><li>اختم بدعوة إجراء (Call to Action) واضحة.</li></ul>', NULL, 'فريق ITX', 'محتوى,تسويق,كتابة,SEO', 'كيف تكتب محتوى يجذب العملاء | ITX', 'نصائح كتابة محتوى تسويقي يجذب العملاء ويحسن محركات البحث', 'published', 7, '2026-05-23 09:04:45', '2026-05-23 09:14:23');
 
 -- --------------------------------------------------------
 
@@ -317,7 +386,7 @@ INSERT INTO `site_settings` (`setting_key`, `setting_value`, `updated_at`) VALUE
 ('footer_text', 'جميع الحقوق محفوظة | شركة ITX للحلول الرقمية', '2026-05-23 07:55:44'),
 ('site_description', 'شركة ITX للحلول الرقمية - متخصصون في تطوير المواقع والتطبيقات وتركيب أنظمة كاميرات الأمان', '2026-05-23 08:04:25'),
 ('site_keywords', 'تطوير المواقع, تطبيقات الجوال, كاميرات المراقبة, أنظمة الأمان', '2026-05-23 07:55:44'),
-('site_logo', 'uploads/img_6a1160860298c9.20131701.jpeg', '2026-05-23 08:08:38'),
+('site_logo', 'uploads/img_6a11628c7040f1.11600430.jpeg', '2026-05-23 08:17:16'),
 ('site_name', 'ITX', '2026-05-23 07:55:44'),
 ('site_tagline', 'حلول رقمية', '2026-05-23 07:55:44'),
 ('whatsapp_msg', 'مرحباً، أود التواصل معكم', '2026-05-23 07:55:44'),

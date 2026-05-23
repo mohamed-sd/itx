@@ -7,8 +7,23 @@ if (is_logged_in()) {
 }
 
 $error = '';
+$maxAttempts = 5;
+$lockWindow  = 300;
+
+$attempts = (int)($_SESSION['login_attempts'] ?? 0);
+$firstTry = (int)($_SESSION['login_first_try'] ?? 0);
+
+if ($attempts > 0 && $firstTry > 0 && (time() - $firstTry) > $lockWindow) {
+  unset($_SESSION['login_attempts'], $_SESSION['login_first_try']);
+  $attempts = 0;
+  $firstTry = 0;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  if ($attempts >= $maxAttempts && $firstTry > 0 && (time() - $firstTry) <= $lockWindow) {
+    $waitLeft = $lockWindow - (time() - $firstTry);
+    $error = 'تم تجاوز عدد المحاولات المسموح. حاول مرة أخرى بعد ' . max(1, $waitLeft) . ' ثانية.';
+  } else {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
@@ -19,14 +34,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 session_regenerate_id(true);
                 $_SESSION['admin_id']   = $row['id'];
                 $_SESSION['admin_name'] = $row['name'] ?: $row['username'];
+        $_SESSION['last_activity'] = time();
+        unset($_SESSION['login_attempts'], $_SESSION['login_first_try']);
                 header('Location: ' . admin_url('dashboard'));
                 exit;
             }
         } catch (\Exception $e) {}
+
+    $_SESSION['login_attempts'] = $attempts + 1;
+    if (empty($_SESSION['login_first_try'])) {
+      $_SESSION['login_first_try'] = time();
+    }
+    usleep(random_int(250000, 500000));
         $error = 'اسم المستخدم أو كلمة المرور غير صحيحة';
     } else {
         $error = 'يرجى تعبئة جميع الحقول';
     }
+  }
 }
 
 $logo     = get_setting('site_logo', 'logo.jpeg');

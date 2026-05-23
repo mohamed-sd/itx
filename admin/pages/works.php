@@ -61,7 +61,18 @@ if ($action === 'save_proj') {
 }
 if ($action === 'del_proj') {
     $id = (int)($_POST['id'] ?? 0);
-    if ($id) { db_exec("DELETE FROM projects WHERE id=?",[$id]); }
+    if ($id) {
+        // Delete all associated media files first
+        $medias = db_all("SELECT type,url,thumbnail FROM project_media WHERE project_id=?", [$id]);
+        foreach ($medias as $m) {
+            if ($m['type'] === 'image') delete_old_image($m['url']);
+            delete_old_image($m['thumbnail']);
+        }
+        // Delete thumbnail
+        $proj = db_row("SELECT thumbnail FROM projects WHERE id=?", [$id]);
+        if ($proj) delete_old_image($proj['thumbnail']);
+        db_exec("DELETE FROM projects WHERE id=?", [$id]);
+    }
     redirect_admin('works&tab=projects','تم حذف المشروع','danger');
 }
 
@@ -88,7 +99,14 @@ if ($action === 'add_media') {
 if ($action === 'del_media') {
     $id  = (int)($_POST['id']  ?? 0);
     $pid = (int)($_POST['pid'] ?? 0);
-    if ($id) db_exec("DELETE FROM project_media WHERE id=?",[$id]);
+    if ($id) {
+        $m = db_row("SELECT type,url,thumbnail FROM project_media WHERE id=?", [$id]);
+        if ($m) {
+            if ($m['type'] === 'image') delete_old_image($m['url']);
+            delete_old_image($m['thumbnail']);
+        }
+        db_exec("DELETE FROM project_media WHERE id=?", [$id]);
+    }
     redirect_admin("works&tab=projects&media=$pid",'تم حذف الوسائط','danger');
 }
 
