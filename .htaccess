@@ -4,6 +4,10 @@ ServerSignature Off
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # Serve robots.txt and sitemap.xml dynamically from PHP scripts.
+    RewriteRule ^robots\.txt$  robots.php  [L]
+    RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
     # Block direct access to sensitive directories and hidden files.
     RewriteRule (^|/)\. - [F,L]
     RewriteRule ^(?:config|database)/ - [F,L,NC]

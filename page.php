@@ -39,12 +39,35 @@ $defaults = [
 
 $page_title   = $page['title']   ?? $defaults[$slug]['title'];
 $page_content = $page['content'] ?? $defaults[$slug]['content'];
+
+// ── SEO ───────────────────────────────────────────────────
+$logo_url      = site_media_url($logo_path, 'logo.jpeg');
+$base_url      = rtrim($gs('site_url', get_base_url()), '/');
+$canonical_url = $base_url . '/page.php?slug=' . rawurlencode($slug);
+$logo_url_abs  = preg_match('#^https?://#', $logo_url) ? $logo_url : $base_url . '/' . ltrim($logo_url, '/');
+$meta_desc     = $page['meta_description'] ?? strip_tags(mb_substr($page_content, 0, 160));
 ?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="<?= e($meta_desc) ?>">
+    <meta name="robots" content="noindex,follow">
+    <link rel="canonical" href="<?= e($canonical_url) ?>">
+    <!-- Open Graph -->
+    <meta property="og:type"        content="website">
+    <meta property="og:url"         content="<?= e($canonical_url) ?>">
+    <meta property="og:site_name"   content="<?= e($site_name) ?>">
+    <meta property="og:locale"      content="ar_SA">
+    <meta property="og:title"       content="<?= e($page_title) ?> | <?= e($site_name) ?>">
+    <meta property="og:description" content="<?= e($meta_desc) ?>">
+    <meta property="og:image"       content="<?= e($logo_url_abs) ?>">
+    <!-- Twitter Card -->
+    <meta name="twitter:card"        content="summary">
+    <meta name="twitter:title"       content="<?= e($page_title) ?> | <?= e($site_name) ?>">
+    <meta name="twitter:description" content="<?= e($meta_desc) ?>">
+    <meta name="twitter:image"       content="<?= e($logo_url_abs) ?>">
     <title><?= e($page_title) ?> | <?= e($site_name) ?></title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -54,12 +77,27 @@ $page_content = $page['content'] ?? $defaults[$slug]['content'];
         html { scroll-behavior: smooth; }
 
         /* ── Header ── */
-        header { background: linear-gradient(135deg,#3F4D60 0%,#2FA8B9 100%); color: white; padding: 1rem 0; box-shadow: 0 2px 10px rgba(0,0,0,.1); }
-        nav    { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 2rem; }
-        .logo  { font-size: 1.8rem; font-weight: 900; display: flex; align-items: center; gap: .5rem; text-decoration: none; color: white; }
-        .logo img { height: 50px; width: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #0FECC1; background: white; padding: 2px; }
-        .back-link { color: rgba(255,255,255,.85); text-decoration: none; font-weight: 600; font-size: .95rem; display: flex; align-items: center; gap: .4rem; transition: color .2s; }
-        .back-link:hover { color: #0FECC1; }
+        header { position: sticky; top: 0; z-index: 1000; background: rgba(40,55,74,.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,.07); transition: background .4s ease, box-shadow .4s ease; }
+        header.scrolled { background: rgba(26,37,53,.97); box-shadow: 0 4px 28px rgba(0,0,0,.28); }
+        nav { max-width: 1200px; margin: 0 auto; position: relative; display: flex; justify-content: space-between; align-items: center; padding: 0 2rem; height: 68px; }
+        .logo { display: flex; align-items: center; gap: .7rem; text-decoration: none; color: white; flex-shrink: 0; }
+        .logo img { height: 46px; width: 46px; border-radius: 50%; object-fit: cover; border: 2px solid #0FECC1; background: white; padding: 2px; transition: transform .35s ease, box-shadow .35s ease; box-shadow: 0 0 0 0 rgba(15,236,193,0); }
+        .logo:hover img { transform: rotate(8deg) scale(1.07); box-shadow: 0 0 0 6px rgba(15,236,193,.2); }
+        .logo-text { line-height: 1.25; }
+        .logo-text strong { display: block; font-size: 1.2rem; font-weight: 900; letter-spacing: .4px; }
+        .logo-text small { display: block; font-size: .63rem; font-weight: 400; color: rgba(255,255,255,.5); margin-top: .1rem; }
+        .nav-links { display: flex; list-style: none; gap: .2rem; align-items: center; margin: 0; padding: 0; }
+        .nav-links a { color: rgba(255,255,255,.8); text-decoration: none; font-weight: 600; font-size: .88rem; padding: .45rem .8rem; border-radius: 8px; position: relative; transition: color .25s ease, background .25s ease; white-space: nowrap; }
+        .nav-links a:hover { color: #0FECC1; background: rgba(15,236,193,.1); }
+        .nav-links a.active { color: #0FECC1; background: rgba(15,236,193,.12); }
+        .nav-links a.active::after { content: ''; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: #0FECC1; border-radius: 50%; }
+        .nav-cta { background: linear-gradient(135deg,#0FECC1 0%,#2FA8B9 100%) !important; color: #1a2535 !important; border-radius: 50px !important; padding: .45rem 1.2rem !important; font-weight: 700 !important; box-shadow: 0 4px 14px rgba(15,236,193,.3); margin-right: .5rem; }
+        .nav-cta:hover { background: linear-gradient(135deg,#2af5d2 0%,#3bbfce 100%) !important; color: #1a2535 !important; transform: translateY(-2px) !important; box-shadow: 0 6px 22px rgba(15,236,193,.5) !important; }
+        .nav-cta.active::after { display: none !important; }
+        .mobile-menu { display: none; align-items: center; justify-content: center; width: 40px; height: 40px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 8px; color: white; font-size: 1.1rem; cursor: pointer; flex-shrink: 0; transition: background .25s ease, border-color .25s ease; }
+        .mobile-menu:hover { background: rgba(255,255,255,.18); }
+        .mobile-menu.active { background: rgba(15,236,193,.2); border-color: rgba(15,236,193,.4); color: #0FECC1; }
+        .nav-links.active { display: flex !important; }
 
         /* ── Page Content ── */
         .page-wrapper { max-width: 860px; margin: 0 auto; padding: 3rem 2rem 5rem; }
@@ -101,21 +139,42 @@ $page_content = $page['content'] ?? $defaults[$slug]['content'];
         @media(max-width:768px){
             .page-hero h1   { font-size: 1.7rem; }
             .page-body      { padding: 1.5rem; border-radius: 0 0 12px 12px; }
-            nav             { padding: 0 1rem; }
+            nav { flex-wrap: nowrap; height: 60px; padding: 0 1rem; }
+            .logo-text strong { font-size: 1rem; }
+            .logo-text small  { display: none; }
+            .mobile-menu { display: flex; }
+            .nav-links { position: absolute; top: 60px; right: 0; left: 0; background: rgba(18,27,40,.98); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); flex-direction: column; gap: .3rem; display: none !important; padding: 1rem 1.25rem 1.5rem; list-style: none; border-bottom: 1px solid rgba(255,255,255,.08); box-shadow: 0 8px 28px rgba(0,0,0,.35); }
+            .nav-links li { width: 100%; }
+            .nav-links a { display: flex; align-items: center; gap: .6rem; padding: .85rem 1rem; border-radius: 10px; font-size: .93rem; color: rgba(255,255,255,.82); }
+            .nav-links a.active::after { display: none; }
+            .nav-links a:hover, .nav-links a.active { background: rgba(15,236,193,.13); color: #0FECC1; }
+            .nav-cta { justify-content: center; margin-right: 0; margin-top: .3rem; box-shadow: none; }
+            .nav-links.active { display: flex !important; }
         }
     </style>
 </head>
 <body>
 
-    <header>
+    <header id="site-header">
         <nav>
             <a href="index.php" class="logo">
-                <img src="<?= e($logo_path) ?>" alt="<?= e($site_name) ?>">
-                <span><?= e($site_name) ?></span>
+                <img src="<?= e($logo_url) ?>" alt="<?= e($site_name) ?> Logo" loading="eager" decoding="async">
+                <div class="logo-text">
+                    <strong><?= e($site_name) ?></strong>
+                    <small><?= e($site_tagline) ?></small>
+                </div>
             </a>
-            <a href="index.php" class="back-link">
-                <i class="fas fa-arrow-right"></i> الرئيسية
-            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.php#home"><i class="fas fa-house"></i> الرئيسية</a></li>
+                <li><a href="index.php#about"><i class="fas fa-circle-info"></i> من نحن</a></li>
+                <li><a href="index.php#services"><i class="fas fa-gears"></i> الخدمات</a></li>
+                <li><a href="index.php#our-works"><i class="fas fa-briefcase"></i> أعمالنا</a></li>
+                <li><a href="blog.php"><i class="fas fa-newspaper"></i> المدونة</a></li>
+                <li><a href="index.php#contact" class="nav-cta"><i class="fas fa-envelope"></i> تواصل معنا</a></li>
+            </ul>
+            <button class="mobile-menu" id="mobileMenu" aria-label="فتح القائمة" aria-expanded="false">
+                <i class="fas fa-bars" id="menuIcon"></i>
+            </button>
         </nav>
     </header>
 
@@ -144,6 +203,40 @@ $page_content = $page['content'] ?? $defaults[$slug]['content'];
        class="btn-whatsapp" title="واتساب" target="_blank" rel="noopener">
         <i class="fab fa-whatsapp"></i>
     </a>
+
+    <script>
+        // ── Navbar ────────────────────────────────────────────────
+        const siteHeader = document.getElementById('site-header');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const menuIcon   = document.getElementById('menuIcon');
+        const navLinks   = document.getElementById('navLinks');
+        window.addEventListener('scroll', () => {
+            siteHeader.classList.toggle('scrolled', window.pageYOffset > 60);
+        }, { passive: true });
+        function closeNav() {
+            navLinks.classList.remove('active');
+            mobileMenu.classList.remove('active');
+            mobileMenu.setAttribute('aria-expanded', 'false');
+            menuIcon.className = 'fas fa-bars';
+            document.body.style.overflow = '';
+        }
+        mobileMenu.addEventListener('click', () => {
+            const isOpen = navLinks.classList.toggle('active');
+            mobileMenu.classList.toggle('active', isOpen);
+            mobileMenu.setAttribute('aria-expanded', String(isOpen));
+            menuIcon.className = isOpen ? 'fas fa-xmark' : 'fas fa-bars';
+            if (window.innerWidth <= 768) document.body.style.overflow = isOpen ? 'hidden' : '';
+        });
+        document.querySelectorAll('.nav-links a').forEach(link =>
+            link.addEventListener('click', closeNav)
+        );
+        document.addEventListener('click', e => {
+            if (!e.target.closest('nav')) closeNav();
+        });
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) { navLinks.style.display = ''; closeNav(); }
+        });
+    </script>
 
 </body>
 </html>

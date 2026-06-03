@@ -69,6 +69,11 @@ $ct_address = $contact['address']   ?? '';
 $ct_wa      = $contact['whatsapp']  ?? $wa_number;
 $ct_map     = $contact['map_embed'] ?? '';
 
+// ── SEO ───────────────────────────────────────────────────
+$base_url      = rtrim($gs('site_url', get_base_url()), '/');
+$canonical_url = $base_url . '/';
+$og_image_url  = preg_match('#^https?://#', $logo_url) ? $logo_url : $base_url . '/' . ltrim($logo_url, '/');
+
 // ── Helpers ───────────────────────────────────────────────
 function nl2p(string $text): string {
     $lines = array_filter(array_map('trim', explode("\n", $text)));
@@ -83,14 +88,48 @@ function nl2p(string $text): string {
     <meta name="description" content="<?= e($site_desc) ?>">
     <meta name="keywords"    content="<?= e($site_kws) ?>">
     <meta name="author"      content="<?= e($site_name) ?>">
+    <link rel="canonical"    href="<?= e($canonical_url) ?>">
+    <!-- Open Graph -->
+    <meta property="og:type"        content="website">
+    <meta property="og:url"         content="<?= e($canonical_url) ?>">
+    <meta property="og:site_name"   content="<?= e($site_name) ?>">
+    <meta property="og:locale"      content="ar_SA">
     <meta property="og:title"       content="<?= e($site_name) ?> | <?= e($site_tagline) ?>">
     <meta property="og:description" content="<?= e($site_desc) ?>">
-    <meta property="og:image"       content="<?= e($logo_url) ?>">
+    <meta property="og:image"       content="<?= e($og_image_url) ?>">
+    <meta property="og:image:alt"   content="<?= e($site_name) ?> logo">
+    <!-- Twitter Card -->
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="<?= e($site_name) ?> | <?= e($site_tagline) ?>">
+    <meta name="twitter:description" content="<?= e($site_desc) ?>">
+    <meta name="twitter:image"       content="<?= e($og_image_url) ?>">
     <title><?= e($site_name) ?> | <?= e($site_tagline) ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "<?= addslashes(e($site_name)) ?>",
+      "description": "<?= addslashes(e($site_desc)) ?>",
+      "url": "<?= e($canonical_url) ?>",
+      "logo": "<?= e($og_image_url) ?>",
+      <?php if ($ct_phone): ?>"telephone": "<?= addslashes(e($ct_phone)) ?>",<?php endif; ?>
+      <?php if ($ct_email): ?>"email": "<?= addslashes(e($ct_email)) ?>",<?php endif; ?>
+      <?php if ($ct_address): ?>
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "<?= addslashes(e($ct_address)) ?>"
+      },
+      <?php endif; ?>
+      "sameAs": [
+        <?= implode(",\n        ", array_map(fn($s) => '"' . e($s['url']) . '"', array_filter($socials, fn($s) => !empty($s['url'])))) ?>
+      ]
+    }
+    </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Cairo', sans-serif; background: #f8f9fa; color: #333; line-height: 1.6; }
@@ -98,27 +137,81 @@ function nl2p(string $text): string {
 
         /* ── Header ── */
         header {
-            background: linear-gradient(135deg, #3F4D60 0%, #2FA8B9 100%);
-            color: white; padding: 1rem 0; position: sticky; top: 0;
-            z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,.1);
+            position: sticky; top: 0; z-index: 1000;
+            background: rgba(40, 55, 74, 0.92);
+            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255,255,255,.07);
+            transition: background .4s ease, box-shadow .4s ease;
+        }
+        header.scrolled {
+            background: rgba(26, 37, 53, 0.97);
+            box-shadow: 0 4px 28px rgba(0,0,0,.28);
+        }
+        .scroll-progress {
+            position: absolute; bottom: 0; left: 0; height: 2px; width: 0%;
+            background: linear-gradient(90deg, #0FECC1, #2FA8B9);
+            transition: width .1s linear; z-index: 2;
         }
         nav {
-            max-width: 1200px; margin: 0 auto;
-            display: flex; justify-content: space-between; align-items: center; padding: 0 2rem;
+            max-width: 1200px; margin: 0 auto; position: relative;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 2rem; height: 68px;
         }
-        .logo { font-size: 1.8rem; font-weight: 900; display: flex; align-items: center; gap: .5rem; }
+        /* Logo */
+        .logo {
+            display: flex; align-items: center; gap: .7rem;
+            text-decoration: none; color: white; flex-shrink: 0;
+        }
         .logo img {
-            height: 55px; width: 55px; border-radius: 50%; object-fit: cover;
-            box-shadow: 0 4px 15px rgba(15,236,193,.3); border: 2px solid #0FECC1;
-            transition: all .3s ease; padding: 2px; background: white;
+            height: 46px; width: 46px; border-radius: 50%; object-fit: cover;
+            border: 2px solid #0FECC1; background: white; padding: 2px;
+            transition: transform .35s ease, box-shadow .35s ease;
+            box-shadow: 0 0 0 0 rgba(15,236,193,0);
         }
-        .logo img:hover { transform: scale(1.1) rotate(5deg); box-shadow: 0 6px 20px rgba(15,236,193,.5); }
-        .nav-links { display: flex; list-style: none; gap: 2rem; align-items: center; }
-        .nav-links a { color: white; text-decoration: none; font-weight: 600; transition: all .3s ease; position: relative; }
-        .nav-links a:hover { color: #0FECC1; transform: translateY(-2px); }
-        .nav-links a::after { content:''; position: absolute; bottom: -5px; right: 0; width: 0; height: 2px; background: #0FECC1; transition: width .3s ease; }
-        .nav-links a:hover::after { width: 100%; }
-        .mobile-menu { display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; z-index: 1001; }
+        .logo:hover img {
+            transform: rotate(8deg) scale(1.07);
+            box-shadow: 0 0 0 6px rgba(15,236,193,.2);
+        }
+        .logo-text { line-height: 1.25; }
+        .logo-text strong { display: block; font-size: 1.2rem; font-weight: 900; letter-spacing: .4px; }
+        .logo-text small  { display: block; font-size: .63rem; font-weight: 400; color: rgba(255,255,255,.5); margin-top: .1rem; }
+        /* Nav Links */
+        .nav-links { display: flex; list-style: none; gap: .2rem; align-items: center; margin: 0; padding: 0; }
+        .nav-links a {
+            color: rgba(255,255,255,.8); text-decoration: none; font-weight: 600; font-size: .88rem;
+            padding: .45rem .8rem; border-radius: 8px; position: relative;
+            transition: color .25s ease, background .25s ease; white-space: nowrap;
+        }
+        .nav-links a:hover { color: #0FECC1; background: rgba(15,236,193,.1); }
+        .nav-links a.active { color: #0FECC1; background: rgba(15,236,193,.12); }
+        .nav-links a.active::after {
+            content: ''; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);
+            width: 4px; height: 4px; background: #0FECC1; border-radius: 50%;
+        }
+        /* CTA button */
+        .nav-cta {
+            background: linear-gradient(135deg, #0FECC1 0%, #2FA8B9 100%) !important;
+            color: #1a2535 !important; border-radius: 50px !important;
+            padding: .45rem 1.2rem !important; font-weight: 700 !important;
+            box-shadow: 0 4px 14px rgba(15,236,193,.3); margin-right: .5rem;
+        }
+        .nav-cta:hover {
+            background: linear-gradient(135deg, #2af5d2 0%, #3bbfce 100%) !important;
+            color: #1a2535 !important; transform: translateY(-2px) !important;
+            box-shadow: 0 6px 22px rgba(15,236,193,.5) !important;
+        }
+        .nav-cta.active { background: linear-gradient(135deg, #0FECC1 0%, #2FA8B9 100%) !important; }
+        .nav-cta.active::after { display: none !important; }
+        /* Mobile toggle */
+        .mobile-menu {
+            display: none; align-items: center; justify-content: center;
+            width: 40px; height: 40px; background: rgba(255,255,255,.1);
+            border: 1px solid rgba(255,255,255,.2); border-radius: 8px;
+            color: white; font-size: 1.1rem; cursor: pointer; flex-shrink: 0;
+            transition: background .25s ease, border-color .25s ease;
+        }
+        .mobile-menu:hover { background: rgba(255,255,255,.18); }
+        .mobile-menu.active { background: rgba(15,236,193,.2); border-color: rgba(15,236,193,.4); color: #0FECC1; }
         .nav-links.active { display: flex !important; }
 
         /* ── Hero ── */
@@ -330,15 +423,28 @@ function nl2p(string $text): string {
 
         /* ── Responsive ── */
         @media(max-width:768px){
-            nav { flex-wrap: wrap; }
-            .logo img { height: 50px; width: 50px; }
-            .nav-links { position: absolute; top: 100%; right: 0; left: 0; background: linear-gradient(135deg,#3F4D60 0%,#2FA8B9 100%); flex-direction: column; gap: 0; display: none !important; padding: 1rem 0; list-style: none; box-shadow: 0 4px 6px rgba(0,0,0,.1); }
+            nav { flex-wrap: nowrap; height: 60px; }
+            .logo-text strong { font-size: 1rem; }
+            .logo-text small  { display: none; }
+            .mobile-menu { display: flex; }
+            .nav-links {
+                position: absolute; top: 60px; right: 0; left: 0;
+                background: rgba(18, 27, 40, 0.98);
+                backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+                flex-direction: column; gap: .3rem;
+                display: none !important; padding: 1rem 1.25rem 1.5rem;
+                list-style: none; border-bottom: 1px solid rgba(255,255,255,.08);
+                box-shadow: 0 8px 28px rgba(0,0,0,.35);
+            }
             .nav-links li { width: 100%; }
-            .nav-links a  { display: block; padding: 1rem 2rem; border-bottom: 1px solid rgba(255,255,255,.1); }
-            .nav-links a:hover { background: rgba(255,255,255,.1); color: #0FECC1; transform: none; padding-right: 2.5rem; }
-            .nav-links a::after { display: none; }
-            .mobile-menu { display: block; transition: transform .3s ease; }
-            .mobile-menu.active { transform: rotate(90deg); }
+            .nav-links a {
+                display: flex; align-items: center; gap: .6rem;
+                padding: .85rem 1rem; border-radius: 10px;
+                font-size: .93rem; color: rgba(255,255,255,.82);
+            }
+            .nav-links a.active::after { display: none; }
+            .nav-links a:hover, .nav-links a.active { background: rgba(15,236,193,.13); color: #0FECC1; }
+            .nav-cta { justify-content: center; margin-right: 0; margin-top: .3rem; box-shadow: none; }
             .nav-links.active { display: flex !important; }
             .hero h1 { font-size: 2rem; }
             .hero p  { font-size: 1rem; }
@@ -383,20 +489,27 @@ function nl2p(string $text): string {
 <body>
 
     <!-- ── Header ── -->
-    <header>
+    <header id="site-header">
+        <div class="scroll-progress" id="scrollProgress"></div>
         <nav>
-            <div class="logo">
-                <img src="<?= e($logo_url) ?>" alt="<?= e($site_name) ?> Logo" title="<?= e($site_name) ?> - <?= e($site_tagline) ?>" loading="eager" decoding="async" fetchpriority="high">
-            </div>
-            <ul class="nav-links">
-                <li><a href="#home">الرئيسية</a></li>
-                <li><a href="#about">عنا</a></li>
-                <li><a href="#services">الخدمات</a></li>
-                <li><a href="#our-works">أعمالنا</a></li>
-                <li><a href="blog.php">المدونة</a></li>
-                <li><a href="#contact">التواصل</a></li>
+            <a href="#home" class="logo">
+                <img src="<?= e($logo_url) ?>" alt="<?= e($site_name) ?> Logo" loading="eager" decoding="async" fetchpriority="high">
+                <div class="logo-text">
+                    <strong><?= e($site_name) ?></strong>
+                    <small><?= e($site_tagline) ?></small>
+                </div>
+            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#home"      data-section="home"     ><i class="fas fa-house"></i> الرئيسية</a></li>
+                <li><a href="#about"     data-section="about"    ><i class="fas fa-circle-info"></i> من نحن</a></li>
+                <li><a href="#services"  data-section="services" ><i class="fas fa-gears"></i> الخدمات</a></li>
+                <li><a href="#our-works" data-section="our-works"><i class="fas fa-briefcase"></i> أعمالنا</a></li>
+                <li><a href="blog.php"                           ><i class="fas fa-newspaper"></i> المدونة</a></li>
+                <li><a href="#contact"   data-section="contact"  class="nav-cta"><i class="fas fa-envelope"></i> تواصل معنا</a></li>
             </ul>
-            <button class="mobile-menu"><i class="fas fa-bars"></i></button>
+            <button class="mobile-menu" id="mobileMenu" aria-label="فتح القائمة" aria-expanded="false">
+                <i class="fas fa-bars" id="menuIcon"></i>
+            </button>
         </nav>
     </header>
 
@@ -724,33 +837,56 @@ function nl2p(string $text): string {
         backToTopBtn.addEventListener('click', () =>
             window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-        // Mobile menu
-        const mobileMenu = document.querySelector('.mobile-menu');
-        const navLinks   = document.querySelector('.nav-links');
+        // ── Navbar ──────────────────────────────────────────────
+        const siteHeader     = document.getElementById('site-header');
+        const scrollProgress = document.getElementById('scrollProgress');
+        const mobileMenu     = document.getElementById('mobileMenu');
+        const menuIcon       = document.getElementById('menuIcon');
+        const navLinks       = document.getElementById('navLinks');
+
+        // Scroll spy + progress bar + header class
+        function onScroll() {
+            const scrollTop = window.pageYOffset;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            scrollProgress.style.width = (docHeight > 0 ? (scrollTop / docHeight) * 100 : 0) + '%';
+            siteHeader.classList.toggle('scrolled', scrollTop > 60);
+            backToTopBtn.classList.toggle('show', scrollTop > 300);
+
+            // Highlight active section
+            let current = 'home';
+            document.querySelectorAll('section[id], div[id]').forEach(sec => {
+                if (scrollTop >= sec.offsetTop - 120) current = sec.id;
+            });
+            document.querySelectorAll('.nav-links a[data-section]').forEach(a =>
+                a.classList.toggle('active', a.dataset.section === current)
+            );
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+
+        // Mobile menu toggle
+        function closeNav() {
+            navLinks.classList.remove('active');
+            mobileMenu.classList.remove('active');
+            mobileMenu.setAttribute('aria-expanded', 'false');
+            menuIcon.className = 'fas fa-bars';
+            document.body.style.overflow = '';
+        }
         mobileMenu.addEventListener('click', () => {
-            mobileMenu.classList.toggle('active');
-            navLinks.classList.toggle('active');
+            const isOpen = navLinks.classList.toggle('active');
+            mobileMenu.classList.toggle('active', isOpen);
+            mobileMenu.setAttribute('aria-expanded', String(isOpen));
+            menuIcon.className = isOpen ? 'fas fa-xmark' : 'fas fa-bars';
+            if (window.innerWidth <= 768) document.body.style.overflow = isOpen ? 'hidden' : '';
         });
         document.querySelectorAll('.nav-links a').forEach(link =>
-            link.addEventListener('click', () => {
-                mobileMenu.classList.remove('active');
-                navLinks.classList.remove('active');
-            })
+            link.addEventListener('click', closeNav)
         );
         document.addEventListener('click', e => {
-            if (!e.target.closest('nav')) {
-                mobileMenu.classList.remove('active');
-                navLinks.classList.remove('active');
-            }
+            if (!e.target.closest('nav')) closeNav();
         });
         window.addEventListener('resize', () => {
-            if (window.innerWidth > 768) {
-                navLinks.style.display = 'flex';
-                mobileMenu.classList.remove('active');
-                navLinks.classList.remove('active');
-            } else {
-                navLinks.style.display = '';
-            }
+            if (window.innerWidth > 768) { navLinks.style.display = ''; closeNav(); }
         });
 
         // Contact form

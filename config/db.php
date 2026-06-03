@@ -69,6 +69,25 @@ function site_media_url(?string $path, string $fallback = ''): string
 apply_security_headers();
 
 /**
+ * Returns the base URL of the site (scheme + host + sub-directory path).
+ * Works whether the site lives at the domain root or in a sub-folder.
+ * Result never has a trailing slash.  e.g. "https://example.com/itx"
+ */
+function get_base_url(): string
+{
+    static $base = null;
+    if ($base === null) {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $script = $_SERVER['SCRIPT_NAME'] ?? '/index.php';
+        $dir    = dirname($script);
+        $path   = ($dir === '/' || $dir === '.' || $dir === '\\') ? '' : rtrim($dir, '/');
+        $base   = $scheme . '://' . $host . $path;
+    }
+    return $base;
+}
+
+/**
  * Returns a singleton PDO connection.
  * Throws PDOException on failure (caught by callers).
  */
