@@ -22,6 +22,7 @@ try {
     $stmt = $db->prepare(
         'SELECT p.*,
                 c.name AS category_name,
+                c.name_en AS category_name_en,
                 c.icon AS category_icon,
                 c.slug AS category_slug
            FROM projects p
@@ -40,7 +41,7 @@ try {
 
     // Media
     $mStmt = $db->prepare(
-        'SELECT id, type, url, thumbnail, caption
+        'SELECT id, type, url, thumbnail, caption, caption_en
            FROM project_media
           WHERE project_id = ?
           ORDER BY sort_order'

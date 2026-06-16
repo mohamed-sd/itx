@@ -1,15 +1,16 @@
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db = getDB();
-    $s = $db->prepare("INSERT INTO contact_info (id,phone,email,address,whatsapp,map_embed) VALUES (1,?,?,?,?,?)
+    $s = $db->prepare("INSERT INTO contact_info (id,phone,email,address,whatsapp,map_embed,address_en) VALUES (1,?,?,?,?,?,?)
         ON DUPLICATE KEY UPDATE phone=VALUES(phone),email=VALUES(email),address=VALUES(address),
-        whatsapp=VALUES(whatsapp),map_embed=VALUES(map_embed)");
+        whatsapp=VALUES(whatsapp),map_embed=VALUES(map_embed),address_en=VALUES(address_en)");
     $s->execute([
-        trim($_POST['phone']     ?? ''),
-        trim($_POST['email']     ?? ''),
-        trim($_POST['address']   ?? ''),
-        trim($_POST['whatsapp']  ?? ''),
-        trim($_POST['map_embed'] ?? ''),
+        trim($_POST['phone']      ?? ''),
+        trim($_POST['email']      ?? ''),
+        trim($_POST['address']    ?? ''),
+        trim($_POST['whatsapp']   ?? ''),
+        trim($_POST['map_embed']  ?? ''),
+        trim($_POST['address_en'] ?? ''),
     ]);
     redirect_admin('contact', 'تم حفظ معلومات التواصل');
 }
@@ -38,6 +39,10 @@ layout_start('التواصل', 'contact');
       <div class="fg">
         <label><i class="fas fa-map-marker-alt"></i> العنوان</label>
         <input type="text" name="address" value="<?= e($c['address'] ?? '') ?>" placeholder="الرياض، المملكة العربية السعودية">
+      </div>
+      <div class="fg">
+        <label><i class="fas fa-language"></i> العنوان — English</label>
+        <input type="text" name="address_en" value="<?= e($c['address_en'] ?? '') ?>" placeholder="Riyadh, Saudi Arabia" dir="ltr">
       </div>
       <div class="fg full">
         <label><i class="fas fa-map"></i> كود تضمين الخريطة (iframe) — اختياري</label>

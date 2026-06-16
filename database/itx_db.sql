@@ -491,6 +491,52 @@ ALTER TABLE `projects`
 --
 ALTER TABLE `project_media`
   ADD CONSTRAINT `fk_media_project` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- English (i18n) columns — added for the bilingual (AR/EN) site.
+-- `ADD COLUMN IF NOT EXISTS` requires MariaDB. On MySQL run
+-- `php database/migrate_i18n.php` instead (portable). Seed the English
+-- translations with `php database/seed_i18n.php`.
+--
+ALTER TABLE `hero_section`
+  ADD COLUMN IF NOT EXISTS `title_en` VARCHAR(255) NULL,
+  ADD COLUMN IF NOT EXISTS `subtitle_en` TEXT NULL,
+  ADD COLUMN IF NOT EXISTS `note_en` VARCHAR(350) NULL,
+  ADD COLUMN IF NOT EXISTS `btn1_text_en` VARCHAR(100) NULL,
+  ADD COLUMN IF NOT EXISTS `btn2_text_en` VARCHAR(100) NULL;
+ALTER TABLE `about_section`
+  ADD COLUMN IF NOT EXISTS `heading_en` VARCHAR(255) NULL,
+  ADD COLUMN IF NOT EXISTS `content_en` TEXT NULL,
+  ADD COLUMN IF NOT EXISTS `skills_en` TEXT NULL;
+ALTER TABLE `services`
+  ADD COLUMN IF NOT EXISTS `title_en` VARCHAR(200) NULL,
+  ADD COLUMN IF NOT EXISTS `description_en` TEXT NULL;
+ALTER TABLE `statistics`
+  ADD COLUMN IF NOT EXISTS `label_en` VARCHAR(200) NULL;
+ALTER TABLE `testimonials`
+  ADD COLUMN IF NOT EXISTS `content_en` TEXT NULL,
+  ADD COLUMN IF NOT EXISTS `author_role_en` VARCHAR(150) NULL;
+ALTER TABLE `contact_info`
+  ADD COLUMN IF NOT EXISTS `address_en` VARCHAR(350) NULL;
+ALTER TABLE `blog_categories`
+  ADD COLUMN IF NOT EXISTS `name_en` VARCHAR(150) NULL;
+ALTER TABLE `blog_posts`
+  ADD COLUMN IF NOT EXISTS `title_en` VARCHAR(300) NULL,
+  ADD COLUMN IF NOT EXISTS `excerpt_en` TEXT NULL,
+  ADD COLUMN IF NOT EXISTS `content_en` LONGTEXT NULL,
+  ADD COLUMN IF NOT EXISTS `meta_title_en` VARCHAR(300) NULL,
+  ADD COLUMN IF NOT EXISTS `meta_description_en` TEXT NULL;
+ALTER TABLE `content_pages`
+  ADD COLUMN IF NOT EXISTS `title_en` VARCHAR(255) NULL,
+  ADD COLUMN IF NOT EXISTS `content_en` LONGTEXT NULL;
+ALTER TABLE `categories`
+  ADD COLUMN IF NOT EXISTS `name_en` VARCHAR(100) NULL;
+ALTER TABLE `projects`
+  ADD COLUMN IF NOT EXISTS `title_en` VARCHAR(200) NULL,
+  ADD COLUMN IF NOT EXISTS `short_desc_en` VARCHAR(350) NULL,
+  ADD COLUMN IF NOT EXISTS `description_en` TEXT NULL;
+ALTER TABLE `project_media`
+  ADD COLUMN IF NOT EXISTS `caption_en` VARCHAR(250) NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

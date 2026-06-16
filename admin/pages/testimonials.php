@@ -3,13 +3,13 @@ $action = $_POST['action'] ?? '';
 if ($action === 'save') {
     $id = (int)($_POST['id'] ?? 0);
     $d  = [
-        trim($_POST['author_name'] ?? ''), trim($_POST['author_role'] ?? ''),
+        trim($_POST['author_name'] ?? ''), trim($_POST['author_role'] ?? ''), trim($_POST['author_role_en'] ?? ''),
         max(1, min(5, (int)($_POST['rating'] ?? 5))),
-        trim($_POST['content'] ?? ''), (int)($_POST['sort_order'] ?? 0),
+        trim($_POST['content'] ?? ''), trim($_POST['content_en'] ?? ''), (int)($_POST['sort_order'] ?? 0),
         $_POST['status'] ?? 'active',
     ];
-    if ($id) db_exec("UPDATE testimonials SET author_name=?,author_role=?,rating=?,content=?,sort_order=?,status=? WHERE id=?", array_merge($d,[$id]));
-    else     db_exec("INSERT INTO testimonials (author_name,author_role,rating,content,sort_order,status) VALUES (?,?,?,?,?,?)", $d);
+    if ($id) db_exec("UPDATE testimonials SET author_name=?,author_role=?,author_role_en=?,rating=?,content=?,content_en=?,sort_order=?,status=? WHERE id=?", array_merge($d,[$id]));
+    else     db_exec("INSERT INTO testimonials (author_name,author_role,author_role_en,rating,content,content_en,sort_order,status) VALUES (?,?,?,?,?,?,?,?)", $d);
     redirect_admin('testimonials', $id ? 'تم التعديل' : 'تمت الإضافة');
 }
 if ($action === 'delete') {
@@ -79,6 +79,11 @@ layout_start('آراء العملاء', 'testimonials');
                    placeholder="مالك متجر إلكتروني">
           </div>
           <div class="fg full">
+            <label><i class="fas fa-language"></i> المسمى الوظيفي — English</label>
+            <input type="text" name="author_role_en" value="<?= e($edit['author_role_en'] ?? '') ?>"
+                   placeholder="E-commerce store owner" dir="ltr">
+          </div>
+          <div class="fg full">
             <label>التقييم</label>
             <div class="stars-input">
               <?php for ($s = 5; $s >= 1; $s--): $checked = (int)($edit['rating'] ?? 5) >= $s ? 'checked' : ''; ?>
@@ -90,6 +95,10 @@ layout_start('آراء العملاء', 'testimonials');
           <div class="fg full">
             <label>نص الرأي <span class="req">*</span></label>
             <textarea name="content" rows="4" required><?= e($edit['content'] ?? '') ?></textarea>
+          </div>
+          <div class="fg full">
+            <label><i class="fas fa-language"></i> نص الرأي — English</label>
+            <textarea name="content_en" rows="4" dir="ltr"><?= e($edit['content_en'] ?? '') ?></textarea>
           </div>
           <div class="fg">
             <label>الترتيب</label>

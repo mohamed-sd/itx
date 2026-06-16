@@ -5,17 +5,19 @@ $action = $_POST['action'] ?? '';
 if ($action === 'save') {
     $id   = (int)($_POST['id'] ?? 0);
     $data = [
-        trim($_POST['icon']        ?? 'fas fa-cog'),
-        trim($_POST['title']       ?? ''),
-        trim($_POST['description'] ?? ''),
-        (int)($_POST['sort_order'] ?? 0),
+        trim($_POST['icon']           ?? 'fas fa-cog'),
+        trim($_POST['title']          ?? ''),
+        trim($_POST['description']    ?? ''),
+        trim($_POST['title_en']       ?? ''),
+        trim($_POST['description_en'] ?? ''),
+        (int)($_POST['sort_order']    ?? 0),
         $_POST['status'] ?? 'active',
     ];
     if ($id) {
-        db_exec("UPDATE services SET icon=?,title=?,description=?,sort_order=?,status=? WHERE id=?",
+        db_exec("UPDATE services SET icon=?,title=?,description=?,title_en=?,description_en=?,sort_order=?,status=? WHERE id=?",
                 array_merge($data, [$id]));
     } else {
-        db_exec("INSERT INTO services (icon,title,description,sort_order,status) VALUES (?,?,?,?,?)", $data);
+        db_exec("INSERT INTO services (icon,title,description,title_en,description_en,sort_order,status) VALUES (?,?,?,?,?,?,?)", $data);
     }
     redirect_admin('services', $id ? 'تم تعديل الخدمة' : 'تم إضافة الخدمة');
 }
@@ -98,8 +100,16 @@ layout_start('الخدمات', 'services');
             <input type="text" name="title" value="<?= e($edit['title'] ?? '') ?>" required>
           </div>
           <div class="fg full">
+            <label><i class="fas fa-language"></i> اسم الخدمة — English</label>
+            <input type="text" name="title_en" value="<?= e($edit['title_en'] ?? '') ?>" placeholder="Web Development" dir="ltr">
+          </div>
+          <div class="fg full">
             <label>الوصف</label>
             <textarea name="description"><?= e($edit['description'] ?? '') ?></textarea>
+          </div>
+          <div class="fg full">
+            <label><i class="fas fa-language"></i> الوصف — English</label>
+            <textarea name="description_en" dir="ltr"><?= e($edit['description_en'] ?? '') ?></textarea>
           </div>
           <div class="fg">
             <label>ترتيب العرض</label>

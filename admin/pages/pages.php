@@ -1,11 +1,14 @@
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $slug    = in_array($_POST['slug'] ?? '', ['privacy','terms']) ? $_POST['slug'] : 'privacy';
-    $title   = trim($_POST['title']   ?? '');
-    $content = $_POST['content']      ?? '';
-    db_exec("INSERT INTO content_pages (slug,title,content) VALUES (?,?,?)
-             ON DUPLICATE KEY UPDATE title=VALUES(title),content=VALUES(content)",
-            [$slug, $title, $content]);
+    $slug       = in_array($_POST['slug'] ?? '', ['privacy','terms']) ? $_POST['slug'] : 'privacy';
+    $title      = trim($_POST['title']   ?? '');
+    $content    = $_POST['content']      ?? '';
+    $title_en   = trim($_POST['title_en'] ?? '');
+    $content_en = $_POST['content_en']   ?? '';
+    db_exec("INSERT INTO content_pages (slug,title,content,title_en,content_en) VALUES (?,?,?,?,?)
+             ON DUPLICATE KEY UPDATE title=VALUES(title),content=VALUES(content),
+             title_en=VALUES(title_en),content_en=VALUES(content_en)",
+            [$slug, $title, $content, $title_en, $content_en]);
     redirect_admin('pages', 'تم حفظ الصفحة بنجاح');
 }
 
@@ -46,9 +49,17 @@ layout_start('الصفحات (خصوصية / شروط)', 'pages');
               <input type="text" name="title" value="<?= e($privacy['title']) ?>">
             </div>
             <div class="fg">
+              <label><i class="fas fa-language"></i> عنوان الصفحة — English</label>
+              <input type="text" name="title_en" value="<?= e($privacy['title_en'] ?? '') ?>" placeholder="Privacy Policy" dir="ltr">
+            </div>
+            <div class="fg">
               <label>المحتوى (HTML مسموح)</label>
               <textarea name="content" rows="18" class="rich-editor" style="font-family:monospace;font-size:.85rem"><?= htmlspecialchars($privacy['content'], ENT_QUOTES, 'UTF-8') ?></textarea>
               <small>يمكنك استخدام وسوم HTML مثل &lt;h2&gt; &lt;h3&gt; &lt;p&gt; &lt;ul&gt; &lt;li&gt; &lt;strong&gt;</small>
+            </div>
+            <div class="fg">
+              <label><i class="fas fa-language"></i> المحتوى — English (HTML مسموح)</label>
+              <textarea name="content_en" rows="18" dir="ltr" class="rich-editor" style="font-family:monospace;font-size:.85rem"><?= htmlspecialchars($privacy['content_en'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
             </div>
           </div>
           <div style="text-align:left;margin-top:1rem">
@@ -77,8 +88,16 @@ layout_start('الصفحات (خصوصية / شروط)', 'pages');
               <input type="text" name="title" value="<?= e($terms['title']) ?>">
             </div>
             <div class="fg">
+              <label><i class="fas fa-language"></i> عنوان الصفحة — English</label>
+              <input type="text" name="title_en" value="<?= e($terms['title_en'] ?? '') ?>" placeholder="Terms of Use" dir="ltr">
+            </div>
+            <div class="fg">
               <label>المحتوى (HTML مسموح)</label>
               <textarea name="content" rows="18" class="rich-editor" style="font-family:monospace;font-size:.85rem"><?= htmlspecialchars($terms['content'], ENT_QUOTES, 'UTF-8') ?></textarea>
+            </div>
+            <div class="fg">
+              <label><i class="fas fa-language"></i> المحتوى — English (HTML مسموح)</label>
+              <textarea name="content_en" rows="18" dir="ltr" class="rich-editor" style="font-family:monospace;font-size:.85rem"><?= htmlspecialchars($terms['content_en'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
             </div>
           </div>
           <div style="text-align:left;margin-top:1rem">

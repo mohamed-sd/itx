@@ -13,10 +13,11 @@ try {
     $db = getDB();
 
     if ($catId > 0) {
-        $sql  = 'SELECT p.id, p.title, p.short_desc, p.thumbnail,
+        $sql  = 'SELECT p.id, p.title, p.title_en, p.short_desc, p.short_desc_en, p.thumbnail,
                         p.is_programming, p.demo_url,
                         p.client_name, p.project_year,
                         c.name AS category_name,
+                        c.name_en AS category_name_en,
                         c.icon AS category_icon,
                         c.slug AS category_slug
                    FROM projects p
@@ -26,10 +27,11 @@ try {
         $stmt = $db->prepare($sql);
         $stmt->execute([$catId]);
     } else {
-        $sql  = 'SELECT p.id, p.title, p.short_desc, p.thumbnail,
+        $sql  = 'SELECT p.id, p.title, p.title_en, p.short_desc, p.short_desc_en, p.thumbnail,
                         p.is_programming, p.demo_url,
                         p.client_name, p.project_year,
                         c.name AS category_name,
+                        c.name_en AS category_name_en,
                         c.icon AS category_icon,
                         c.slug AS category_slug
                    FROM projects p

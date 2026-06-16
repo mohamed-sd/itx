@@ -4,15 +4,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $image    = handle_image_input('img_file', 'img_url', $existing, 'uploads');
 
     $db   = getDB();
-    $stmt = $db->prepare("INSERT INTO about_section (id,heading,content,image,skills)
-        VALUES (1,?,?,?,?)
+    $stmt = $db->prepare("INSERT INTO about_section (id,heading,content,image,skills,heading_en,content_en,skills_en)
+        VALUES (1,?,?,?,?,?,?,?)
         ON DUPLICATE KEY UPDATE heading=VALUES(heading),content=VALUES(content),
-        image=VALUES(image),skills=VALUES(skills)");
+        image=VALUES(image),skills=VALUES(skills),
+        heading_en=VALUES(heading_en),content_en=VALUES(content_en),skills_en=VALUES(skills_en)");
     $stmt->execute([
         trim($_POST['heading'] ?? ''),
         trim($_POST['content'] ?? ''),
         $image,
         trim($_POST['skills']  ?? ''),
+        trim($_POST['heading_en'] ?? ''),
+        trim($_POST['content_en'] ?? ''),
+        trim($_POST['skills_en']  ?? ''),
     ]);
     redirect_admin('about', 'تم حفظ قسم "عن الشركة" بنجاح');
 }
@@ -31,14 +35,28 @@ layout_start('عن الشركة', 'about');
         <input type="text" name="heading" value="<?= e($a['heading'] ?? 'مرحباً بك في ITX') ?>">
       </div>
       <div class="fg">
+        <label><i class="fas fa-language"></i> العنوان — English</label>
+        <input type="text" name="heading_en" value="<?= e($a['heading_en'] ?? '') ?>" placeholder="Welcome to ITX" dir="ltr">
+      </div>
+      <div class="fg">
         <label>النص (كل سطر = فقرة)</label>
         <textarea name="content" rows="8"><?= e($a['content'] ?? '') ?></textarea>
+      </div>
+      <div class="fg">
+        <label><i class="fas fa-language"></i> النص — English (كل سطر = فقرة)</label>
+        <textarea name="content_en" rows="8" dir="ltr"><?= e($a['content_en'] ?? '') ?></textarea>
       </div>
       <div class="fg">
         <label>المهارات والتخصصات (مفصولة بفاصلة)</label>
         <input type="text" name="skills" value="<?= e($a['skills'] ?? '') ?>"
                placeholder="تطوير المواقع,تطبيقات الجوال,...">
         <small>مثال: تطوير المواقع,تطبيقات الجوال,كاميرات مراقبة</small>
+      </div>
+      <div class="fg">
+        <label><i class="fas fa-language"></i> المهارات — English (مفصولة بفاصلة)</label>
+        <input type="text" name="skills_en" value="<?= e($a['skills_en'] ?? '') ?>"
+               placeholder="Web Development,Mobile Apps,..." dir="ltr">
+        <small>نفس ترتيب وعدد المهارات العربية قدر الإمكان</small>
       </div>
     </div>
   </div>

@@ -2,9 +2,9 @@
 $action = $_POST['action'] ?? '';
 if ($action === 'save') {
     $id = (int)($_POST['id'] ?? 0);
-    $d  = [trim($_POST['value'] ?? ''), trim($_POST['label'] ?? ''), (int)($_POST['sort_order'] ?? 0), $_POST['status'] ?? 'active'];
-    if ($id) db_exec("UPDATE statistics SET value=?,label=?,sort_order=?,status=? WHERE id=?", array_merge($d,[$id]));
-    else     db_exec("INSERT INTO statistics (value,label,sort_order,status) VALUES (?,?,?,?)", $d);
+    $d  = [trim($_POST['value'] ?? ''), trim($_POST['label'] ?? ''), trim($_POST['label_en'] ?? ''), (int)($_POST['sort_order'] ?? 0), $_POST['status'] ?? 'active'];
+    if ($id) db_exec("UPDATE statistics SET value=?,label=?,label_en=?,sort_order=?,status=? WHERE id=?", array_merge($d,[$id]));
+    else     db_exec("INSERT INTO statistics (value,label,label_en,sort_order,status) VALUES (?,?,?,?,?)", $d);
     redirect_admin('statistics', $id ? 'تم التعديل' : 'تمت الإضافة');
 }
 if ($action === 'delete') {
@@ -69,6 +69,10 @@ layout_start('الإحصائيات', 'statistics');
           <div class="fg">
             <label>التسمية <span class="req">*</span></label>
             <input type="text" name="label" value="<?= e($edit['label'] ?? '') ?>" placeholder="مشروع منجز" required>
+          </div>
+          <div class="fg">
+            <label><i class="fas fa-language"></i> التسمية — English</label>
+            <input type="text" name="label_en" value="<?= e($edit['label_en'] ?? '') ?>" placeholder="Projects delivered" dir="ltr">
           </div>
           <div class="fg">
             <label>الترتيب</label>

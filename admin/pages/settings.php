@@ -1,8 +1,9 @@
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $keys = ['site_name','site_tagline','site_description','site_keywords',
-             'whatsapp_number','whatsapp_msg','footer_text'];
+    $keys = ['site_name','site_tagline','site_tagline_en','site_description','site_description_en',
+             'site_keywords','whatsapp_number','whatsapp_msg','footer_text','footer_text_en'];
     foreach ($keys as $k) save_setting($k, trim($_POST[$k] ?? ''));
+    save_setting('enable_english', isset($_POST['enable_english']) ? '1' : '0');
 
     // Logo
     $existing = get_setting('site_logo','logo.jpeg');
@@ -27,9 +28,17 @@ layout_start('الإعدادات العامة','settings');
         <label>الشعار الفرعي (Tagline)</label>
         <input type="text" name="site_tagline" value="<?= e(get_setting('site_tagline')) ?>" placeholder="حلول رقمية">
       </div>
+      <div class="fg">
+        <label><i class="fas fa-language"></i> الشعار الفرعي — English</label>
+        <input type="text" name="site_tagline_en" value="<?= e(get_setting('site_tagline_en')) ?>" placeholder="Digital Solutions" dir="ltr">
+      </div>
       <div class="fg full">
         <label>وصف الموقع (meta description)</label>
         <textarea name="site_description"><?= e(get_setting('site_description')) ?></textarea>
+      </div>
+      <div class="fg full">
+        <label><i class="fas fa-language"></i> وصف الموقع — English</label>
+        <textarea name="site_description_en" dir="ltr"><?= e(get_setting('site_description_en')) ?></textarea>
       </div>
       <div class="fg full">
         <label>الكلمات المفتاحية (meta keywords)</label>
@@ -83,11 +92,29 @@ layout_start('الإعدادات العامة','settings');
 <div class="card">
   <div class="card-head"><h2><i class="fas fa-shoe-prints"></i> الفوتر</h2></div>
   <div class="card-body">
-    <div class="fg">
-      <label>نص حقوق النشر في الفوتر</label>
-      <input type="text" name="footer_text" value="<?= e(get_setting('footer_text')) ?>"
-             placeholder="جميع الحقوق محفوظة | شركة ITX">
+    <div class="form-grid">
+      <div class="fg">
+        <label>نص حقوق النشر في الفوتر</label>
+        <input type="text" name="footer_text" value="<?= e(get_setting('footer_text')) ?>"
+               placeholder="جميع الحقوق محفوظة | شركة ITX">
+      </div>
+      <div class="fg">
+        <label><i class="fas fa-language"></i> نص الفوتر — English</label>
+        <input type="text" name="footer_text_en" value="<?= e(get_setting('footer_text_en')) ?>"
+               placeholder="All rights reserved | ITX" dir="ltr">
+      </div>
     </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h2><i class="fas fa-language"></i> اللغة الإنجليزية</h2></div>
+  <div class="card-body">
+    <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:600">
+      <input type="checkbox" name="enable_english" value="1" <?= get_setting('enable_english','1') !== '0' ? 'checked' : '' ?> style="width:18px;height:18px">
+      تفعيل زر اللغة الإنجليزية (EN) في الموقع
+    </label>
+    <small style="display:block;margin-top:.5rem;color:var(--muted)">عند التفعيل يظهر زر التبديل بين العربية والإنجليزية في الموقع. تُدار الترجمات من حقول «English» في كل قسم.</small>
   </div>
 </div>
 

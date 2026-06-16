@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"/c/xampp/php/php.exe\" _works_dump.php)",
+      "Bash(/c/xampp/php/php.exe -r ' *)",
+      "Bash(curl -s --max-time 8 \"http://localhost/itx/assets/js/script.js\")",
+      "Bash(curl -s --max-time 8 \"http://localhost/itx/assets/js/home.js\")",
+      "Bash(curl -s --max-time 8 \"http://localhost/itx/assets/css/app.css\")"
+    ]
+  }
+}

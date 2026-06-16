@@ -9,7 +9,7 @@ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
 try {
     $rows = getDB()
-        ->query('SELECT id, name, icon, slug FROM categories ORDER BY sort_order')
+        ->query('SELECT id, name, name_en, icon, slug FROM categories ORDER BY sort_order')
         ->fetchAll();
 
     echo json_encode(['success' => true, 'data' => $rows], JSON_UNESCAPED_UNICODE);

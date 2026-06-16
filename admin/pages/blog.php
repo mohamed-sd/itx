@@ -42,9 +42,9 @@ if ($action === 'save_bcat') {
     $name = trim($_POST['name'] ?? '');
     $slug = trim($_POST['slug'] ?? '') ?: blog_slugify($name);
     $slug = bcat_unique_slug($slug, $id);
-    $d    = [$name, $slug, (int)($_POST['sort_order'] ?? 0), $_POST['status'] ?? 'active'];
-    if ($id) db_exec("UPDATE blog_categories SET name=?,slug=?,sort_order=?,status=? WHERE id=?", array_merge($d, [$id]));
-    else     db_exec("INSERT INTO blog_categories (name,slug,sort_order,status) VALUES (?,?,?,?)", $d);
+    $d    = [$name, trim($_POST['name_en'] ?? ''), $slug, (int)($_POST['sort_order'] ?? 0), $_POST['status'] ?? 'active'];
+    if ($id) db_exec("UPDATE blog_categories SET name=?,name_en=?,slug=?,sort_order=?,status=? WHERE id=?", array_merge($d, [$id]));
+    else     db_exec("INSERT INTO blog_categories (name,name_en,slug,sort_order,status) VALUES (?,?,?,?,?)", $d);
     redirect_admin('blog&tab=categories', $id ? 'تم تعديل الفئة' : 'تمت إضافة الفئة');
 }
 if ($action === 'del_bcat') {
@@ -75,16 +75,23 @@ if ($action === 'save_post') {
         trim($_POST['meta_title']       ?? ''),
         trim($_POST['meta_description'] ?? ''),
         $_POST['status']                ?? 'published',
+        trim($_POST['title_en']            ?? ''),
+        trim($_POST['excerpt_en']          ?? ''),
+        $_POST['content_en']               ?? '',
+        trim($_POST['meta_title_en']       ?? ''),
+        trim($_POST['meta_description_en'] ?? ''),
     ];
     if ($id) {
         db_exec("UPDATE blog_posts SET category_id=?,title=?,slug=?,excerpt=?,content=?,
-                 thumbnail=?,author=?,tags=?,meta_title=?,meta_description=?,status=? WHERE id=?",
+                 thumbnail=?,author=?,tags=?,meta_title=?,meta_description=?,status=?,
+                 title_en=?,excerpt_en=?,content_en=?,meta_title_en=?,meta_description_en=? WHERE id=?",
                  array_merge($d, [$id]));
         redirect_admin('blog', 'تم تعديل المقال');
     } else {
         db_exec("INSERT INTO blog_posts
-                 (category_id,title,slug,excerpt,content,thumbnail,author,tags,meta_title,meta_description,status)
-                 VALUES (?,?,?,?,?,?,?,?,?,?,?)", $d);
+                 (category_id,title,slug,excerpt,content,thumbnail,author,tags,meta_title,meta_description,status,
+                  title_en,excerpt_en,content_en,meta_title_en,meta_description_en)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", $d);
         redirect_admin('blog', 'تمت إضافة المقال');
     }
 }
@@ -257,6 +264,11 @@ layout_start('المدونة', 'blog');
             <input type="text" name="title" id="postTitle" value="<?= e($editPost['title'] ?? '') ?>"
                    placeholder="اكتب عنواناً جذاباً…" required oninput="autoSlug(this.value)">
           </div>
+          <div class="fg full">
+            <label><i class="fas fa-language"></i> عنوان المقال — English</label>
+            <input type="text" name="title_en" value="<?= e($editPost['title_en'] ?? '') ?>"
+                   placeholder="English title…" dir="ltr">
+          </div>
 
           <!-- Slug -->
           <div class="fg full">
@@ -332,12 +344,21 @@ layout_start('المدونة', 'blog');
             <label>مقتطف / ملخص المقال</label>
             <textarea name="excerpt" rows="3" placeholder="نص مختصر يظهر في قوائم المقالات (2-3 جمل)"><?= e($editPost['excerpt'] ?? '') ?></textarea>
           </div>
+          <div class="fg full">
+            <label><i class="fas fa-language"></i> المقتطف — English</label>
+            <textarea name="excerpt_en" rows="3" dir="ltr" placeholder="Short summary shown in article lists"><?= e($editPost['excerpt_en'] ?? '') ?></textarea>
+          </div>
 
           <!-- Content -->
           <div class="fg full">
             <label>محتوى المقال <span class="req">*</span></label>
             <textarea name="content" rows="18" style="font-family:monospace;font-size:.84rem"><?= htmlspecialchars($editPost['content'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
             <small>يمكنك استخدام HTML: &lt;h2&gt; &lt;h3&gt; &lt;p&gt; &lt;ul&gt; &lt;li&gt; &lt;strong&gt; &lt;a&gt; &lt;img&gt;</small>
+          </div>
+          <div class="fg full">
+            <label><i class="fas fa-language"></i> محتوى المقال — English</label>
+            <textarea name="content_en" rows="18" dir="ltr" style="font-family:monospace;font-size:.84rem"><?= htmlspecialchars($editPost['content_en'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+            <small>اتركه فارغاً إن لم ترغب بترجمة هذا المقال — سيبقى بالعربية عند تبديل اللغة</small>
           </div>
 
           <!-- SEO -->
@@ -351,6 +372,16 @@ layout_start('المدونة', 'blog');
             <label>وصف SEO (meta description)</label>
             <input type="text" name="meta_description" value="<?= e($editPost['meta_description'] ?? '') ?>"
                    placeholder="وصف موجز لمحركات البحث (120-160 حرف)">
+          </div>
+          <div class="fg">
+            <label><i class="fas fa-language"></i> عنوان SEO — English</label>
+            <input type="text" name="meta_title_en" value="<?= e($editPost['meta_title_en'] ?? '') ?>" dir="ltr"
+                   placeholder="SEO title shown in search results">
+          </div>
+          <div class="fg">
+            <label><i class="fas fa-language"></i> وصف SEO — English</label>
+            <input type="text" name="meta_description_en" value="<?= e($editPost['meta_description_en'] ?? '') ?>" dir="ltr"
+                   placeholder="Short SEO description">
           </div>
 
         </div>
@@ -379,6 +410,11 @@ layout_start('المدونة', 'blog');
             <label>اسم الفئة <span class="req">*</span></label>
             <input type="text" name="name" id="bcatName" value="<?= e($editCat['name'] ?? '') ?>"
                    placeholder="مثال: تقنية وبرمجة" required oninput="autoBcatSlug(this.value)">
+          </div>
+          <div class="fg full">
+            <label><i class="fas fa-language"></i> اسم الفئة — English</label>
+            <input type="text" name="name_en" value="<?= e($editCat['name_en'] ?? '') ?>"
+                   placeholder="Tech & Programming" dir="ltr">
           </div>
           <div class="fg full">
             <label>الـ Slug (رابط الفئة)</label>

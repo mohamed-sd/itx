@@ -6,13 +6,17 @@ $action = $_POST['action'] ?? '';
 
 // ── Category actions ──────────────────────────────────────────
 if ($action === 'save_cat') {
-    $id = (int)($_POST['id'] ?? 0);
-    $d  = [trim($_POST['name'] ?? ''), trim($_POST['icon'] ?? 'fas fa-folder'),
-           trim($_POST['slug'] ?? ''), (int)($_POST['sort_order'] ?? 0)];
-    if (empty($d[0])) { set_flash('اسم الفئة مطلوب','danger'); header('Location: '.admin_url('works')); exit; }
-    if (empty($d[2])) $d[2] = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $d[0]));
-    if ($id) db_exec("UPDATE categories SET name=?,icon=?,slug=?,sort_order=? WHERE id=?", array_merge($d,[$id]));
-    else     db_exec("INSERT INTO categories (name,icon,slug,sort_order) VALUES (?,?,?,?)", $d);
+    $id      = (int)($_POST['id'] ?? 0);
+    $name    = trim($_POST['name'] ?? '');
+    $name_en = trim($_POST['name_en'] ?? '');
+    $icon    = trim($_POST['icon'] ?? 'fas fa-folder');
+    $slug    = trim($_POST['slug'] ?? '');
+    $sort    = (int)($_POST['sort_order'] ?? 0);
+    if ($name === '') { set_flash('اسم الفئة مطلوب','danger'); header('Location: '.admin_url('works')); exit; }
+    if ($slug === '') $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $name));
+    $d = [$name, $name_en, $icon, $slug, $sort];
+    if ($id) db_exec("UPDATE categories SET name=?,name_en=?,icon=?,slug=?,sort_order=? WHERE id=?", array_merge($d,[$id]));
+    else     db_exec("INSERT INTO categories (name,name_en,icon,slug,sort_order) VALUES (?,?,?,?,?)", $d);
     redirect_admin('works', $id ? 'تم تعديل الفئة' : 'تمت إضافة الفئة');
 }
 if ($action === 'del_cat') {
@@ -45,17 +49,21 @@ if ($action === 'save_proj') {
         trim($_POST['technologies'] ?? ''),
         $_POST['status']     ?? 'active',
         (int)($_POST['sort_order'] ?? 0),
+        trim($_POST['title_en']       ?? ''),
+        trim($_POST['short_desc_en']  ?? ''),
+        trim($_POST['description_en'] ?? ''),
     ];
 
     if ($id) {
         db_exec("UPDATE projects SET category_id=?,title=?,description=?,short_desc=?,thumbnail=?,
                  is_programming=?,demo_url=?,client_name=?,project_year=?,technologies=?,
-                 status=?,sort_order=? WHERE id=?", array_merge($d,[$id]));
+                 status=?,sort_order=?,title_en=?,short_desc_en=?,description_en=? WHERE id=?", array_merge($d,[$id]));
         redirect_admin('works&tab=projects','تم تعديل المشروع');
     } else {
         $newId = db_exec("INSERT INTO projects (category_id,title,description,short_desc,thumbnail,
-                 is_programming,demo_url,client_name,project_year,technologies,status,sort_order)
-                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", $d);
+                 is_programming,demo_url,client_name,project_year,technologies,status,sort_order,
+                 title_en,short_desc_en,description_en)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", $d);
         redirect_admin('works&tab=projects','تمت إضافة المشروع');
     }
 }
@@ -87,10 +95,11 @@ if ($action === 'add_media') {
         $url = trim($_POST['media_url'] ?? '');
     }
     if ($pid && $url) {
-        db_exec("INSERT INTO project_media (project_id,type,url,thumbnail,caption,sort_order) VALUES (?,?,?,?,?,?)",
+        db_exec("INSERT INTO project_media (project_id,type,url,thumbnail,caption,caption_en,sort_order) VALUES (?,?,?,?,?,?,?)",
             [$pid, $type, $url,
              trim($_POST['media_thumb'] ?? '') ?: ($type==='image' ? $url : ''),
              trim($_POST['media_caption'] ?? ''),
+             trim($_POST['media_caption_en'] ?? ''),
              (int)($_POST['media_order'] ?? 0)]);
         redirect_admin("works&tab=projects&media=$pid",'تمت إضافة الوسائط');
     }
@@ -233,6 +242,10 @@ layout_start('أعمالنا — الفئات والمشاريع', 'works');
             <label>التسمية التوضيحية</label>
             <input type="text" name="media_caption" placeholder="وصف مختصر للصورة/الفيديو">
           </div>
+          <div class="fg">
+            <label><i class="fas fa-language"></i> التسمية — English</label>
+            <input type="text" name="media_caption_en" placeholder="Short caption" dir="ltr">
+          </div>
 
           <!-- Image input -->
           <div class="fg full" id="media-img-input">
@@ -354,6 +367,10 @@ layout_start('أعمالنا — الفئات والمشاريع', 'works');
             <input type="text" name="name" value="<?= e($editCat['name'] ?? '') ?>" required>
           </div>
           <div class="fg full">
+            <label><i class="fas fa-language"></i> اسم الفئة — English</label>
+            <input type="text" name="name_en" value="<?= e($editCat['name_en'] ?? '') ?>" placeholder="Programming" dir="ltr">
+          </div>
+          <div class="fg full">
             <label>أيقونة FontAwesome</label>
             <div style="display:flex;gap:.5rem;align-items:center">
               <input type="text" name="icon" class="icon-inp" value="<?= e($editCat['icon'] ?? 'fas fa-folder') ?>"
@@ -397,6 +414,10 @@ layout_start('أعمالنا — الفئات والمشاريع', 'works');
             <label>عنوان المشروع <span class="req">*</span></label>
             <input type="text" name="title" value="<?= e($editProj['title'] ?? '') ?>" required>
           </div>
+          <div class="fg full">
+            <label><i class="fas fa-language"></i> عنوان المشروع — English</label>
+            <input type="text" name="title_en" value="<?= e($editProj['title_en'] ?? '') ?>" dir="ltr">
+          </div>
           <div class="fg">
             <label>الفئة <span class="req">*</span></label>
             <select name="category_id" required>
@@ -422,8 +443,16 @@ layout_start('أعمالنا — الفئات والمشاريع', 'works');
             <input type="text" name="short_desc" value="<?= e($editProj['short_desc'] ?? '') ?>" data-maxlen="180">
           </div>
           <div class="fg full">
+            <label><i class="fas fa-language"></i> وصف مختصر — English</label>
+            <input type="text" name="short_desc_en" value="<?= e($editProj['short_desc_en'] ?? '') ?>" dir="ltr">
+          </div>
+          <div class="fg full">
             <label>الوصف التفصيلي</label>
             <textarea name="description" rows="5"><?= e($editProj['description'] ?? '') ?></textarea>
+          </div>
+          <div class="fg full">
+            <label><i class="fas fa-language"></i> الوصف التفصيلي — English</label>
+            <textarea name="description_en" rows="5" dir="ltr"><?= e($editProj['description_en'] ?? '') ?></textarea>
           </div>
           <div class="fg full">
             <label>التقنيات المستخدمة (مفصولة بفاصلة)</label>
