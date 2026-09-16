@@ -1,12 +1,13 @@
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db = getDB();
-    $s = $db->prepare("INSERT INTO contact_info (id,phone,email,address,whatsapp,map_embed,address_en) VALUES (1,?,?,?,?,?,?)
-        ON DUPLICATE KEY UPDATE phone=VALUES(phone),email=VALUES(email),address=VALUES(address),
+    $s = $db->prepare("INSERT INTO contact_info (id,phone,email,email2,address,whatsapp,map_embed,address_en) VALUES (1,?,?,?,?,?,?,?)
+        ON DUPLICATE KEY UPDATE phone=VALUES(phone),email=VALUES(email),email2=VALUES(email2),address=VALUES(address),
         whatsapp=VALUES(whatsapp),map_embed=VALUES(map_embed),address_en=VALUES(address_en)");
     $s->execute([
         trim($_POST['phone']      ?? ''),
         trim($_POST['email']      ?? ''),
+        trim($_POST['email2']     ?? ''),
         trim($_POST['address']    ?? ''),
         trim($_POST['whatsapp']   ?? ''),
         trim($_POST['map_embed']  ?? ''),
@@ -30,7 +31,11 @@ layout_start('التواصل', 'contact');
       </div>
       <div class="fg">
         <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
-        <input type="email" name="email" value="<?= e($c['email'] ?? '') ?>">
+        <input type="email" name="email" value="<?= e($c['email'] ?? '') ?>" dir="ltr">
+      </div>
+      <div class="fg">
+        <label><i class="fas fa-envelope-open-text"></i> بريد إلكتروني إضافي — اختياري</label>
+        <input type="email" name="email2" value="<?= e($c['email2'] ?? '') ?>" placeholder="info@itxsmart.com" dir="ltr">
       </div>
       <div class="fg">
         <label><i class="fab fa-whatsapp"></i> رقم واتساب (بدون + مع رمز الدولة)</label>

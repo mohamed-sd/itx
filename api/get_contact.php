@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 try {
     $db = getDB();
 
-    $contact = $db->query('SELECT phone, email, address, address_en, whatsapp, map_embed FROM contact_info WHERE id = 1 LIMIT 1')->fetch();
+    $contact = $db->query('SELECT phone, email, email2, address, address_en, whatsapp, map_embed FROM contact_info WHERE id = 1 LIMIT 1')->fetch();
 
     $socials = $db
         ->query("SELECT id, platform, icon, url FROM social_media WHERE status = 'active' ORDER BY sort_order")

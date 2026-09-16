@@ -79,6 +79,7 @@ $footer_text_en  = $gs('footer_text_en', '');
 
 $ct_phone      = $contact['phone']      ?? '';
 $ct_email      = $contact['email']      ?? '';
+$ct_email2     = $contact['email2']     ?? '';
 $ct_address    = $contact['address']    ?? '';
 $ct_address_en = $contact['address_en'] ?? '';
 $ct_wa         = $contact['whatsapp']   ?? '';
