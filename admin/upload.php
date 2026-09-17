@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_FILES['file'])) {
 
 try {
     $subdir = preg_replace('#[^a-z0-9/_-]#i', '', $_POST['dir'] ?? 'uploads');
+    if (strpos($subdir, 'uploads') !== 0) $subdir = 'uploads';   // keep uploads confined to /uploads
     $path   = upload_file($_FILES['file'], $subdir);
     echo json_encode([
         'success'  => true,

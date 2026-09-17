@@ -4,7 +4,7 @@ require_once __DIR__ . '/includes/layout.php';
 
 require_login();
 
-$valid = ['dashboard','settings','hero','about','services','statistics',
+$valid = ['dashboard','analytics','employees','settings','hero','about','services','statistics',
           'works','testimonials','contact','social','pages',
           'blog','image_cleaner'];
 

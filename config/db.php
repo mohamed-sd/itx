@@ -2,7 +2,8 @@
 // ─────────────────────────────────────────────
 //  Database configuration — edit these values
 // ─────────────────────────────────────────────
-define('DB_HOST',    'localhost');
+define('DB_HOST',    '127.0.0.1');
+define('DB_PORT',    3307);        // WAMP MariaDB port (MySQL default is 3306)
 define('DB_USER',    'root');
 define('DB_PASS',    '');          // WAMP default: empty password
 define('DB_NAME',    'itx_db');
@@ -37,6 +38,7 @@ function apply_security_headers(): void
 
     $csp = "default-src 'self'; "
          . "img-src 'self' data: https:; "
+         . "media-src 'self' https: blob:; "
          . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
          . "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
          . "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
@@ -97,8 +99,8 @@ function getDB(): PDO
 
     if ($pdo === null) {
         $dsn = sprintf(
-            'mysql:host=%s;dbname=%s;charset=%s',
-            DB_HOST, DB_NAME, DB_CHARSET
+            'mysql:host=%s;port=%d;dbname=%s;charset=%s',
+            DB_HOST, DB_PORT, DB_NAME, DB_CHARSET
         );
         $pdo = new PDO($dsn, DB_USER, DB_PASS, [
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,

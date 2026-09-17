@@ -228,3 +228,12 @@
 .page-body a { color: var(--orange-600); text-decoration: underline; }
 .last-updated { font-size: .82rem; color: var(--navy-300); margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--line); }
 @media (max-width: 760px) { .page-body { padding: 26px 22px; } }
+
+/* ── Hero background promo video (managed from admin) ── */
+.hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+.hero-video-overlay { position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(to left, rgba(247,248,251,.80) 0%, rgba(247,248,251,.58) 55%, rgba(247,248,251,.35) 100%); }
+.hero.has-video .hero-grid-lines, .hero.has-video .hero-blob { display: none; }
+@media (max-width: 768px) {
+  .hero-video-overlay { background: linear-gradient(to bottom, rgba(247,248,251,.72), rgba(247,248,251,.86)); }
+}

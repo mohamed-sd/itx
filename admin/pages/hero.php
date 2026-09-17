@@ -1,11 +1,35 @@
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db = getDB();
+
+    // ── Background video: upload (priority) / URL / remove / keep. Old file is deleted. ──
+    $existingVideo = db_row("SELECT bg_video FROM hero_section WHERE id=1")['bg_video'] ?? '';
+    $bg_video = $existingVideo;
+    try {
+        if (!empty($_POST['remove_video'])) {
+            delete_old_image($existingVideo);          // only deletes local files inside /uploads/
+            $bg_video = '';
+        } elseif (!empty($_FILES['bg_video_file']['name']) && $_FILES['bg_video_file']['error'] === UPLOAD_ERR_OK) {
+            $new = upload_video($_FILES['bg_video_file']);
+            if ($new !== $existingVideo) delete_old_image($existingVideo);
+            $bg_video = $new;
+        } else {
+            $url = trim($_POST['bg_video_url'] ?? '');
+            if ($url !== '' && $url !== $existingVideo) {
+                delete_old_image($existingVideo);       // switching to a URL → drop old uploaded file
+                $bg_video = $url;
+            }
+        }
+    } catch (\Throwable $ex) {
+        redirect_admin('hero', 'خطأ في الفيديو: ' . $ex->getMessage(), 'danger');
+    }
+
     $stmt = $db->prepare("INSERT INTO hero_section
-        (id,title,subtitle,note,btn1_text,btn1_link,btn2_text,btn2_link,
+        (id,title,subtitle,note,bg_video,btn1_text,btn1_link,btn2_text,btn2_link,
          title_en,subtitle_en,note_en,btn1_text_en,btn2_text_en)
-        VALUES (1,?,?,?,?,?,?,?,?,?,?,?,?)
+        VALUES (1,?,?,?,?,?,?,?,?,?,?,?,?,?)
         ON DUPLICATE KEY UPDATE title=VALUES(title),subtitle=VALUES(subtitle),note=VALUES(note),
+        bg_video=VALUES(bg_video),
         btn1_text=VALUES(btn1_text),btn1_link=VALUES(btn1_link),
         btn2_text=VALUES(btn2_text),btn2_link=VALUES(btn2_link),
         title_en=VALUES(title_en),subtitle_en=VALUES(subtitle_en),note_en=VALUES(note_en),
@@ -14,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         trim($_POST['title']    ?? ''),
         trim($_POST['subtitle'] ?? ''),
         trim($_POST['note']     ?? ''),
+        $bg_video,
         trim($_POST['btn1_text']?? ''),
         trim($_POST['btn1_link']?? ''),
         trim($_POST['btn2_text']?? ''),
@@ -39,7 +64,7 @@ layout_start('الصفحة الرئيسية (Hero)', 'hero');
     </a>
   </div>
   <div class="card-body">
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
       <div class="form-grid col1">
         <div class="fg">
           <label>العنوان الرئيسي <span class="req">*</span></label>
@@ -65,6 +90,33 @@ layout_start('الصفحة الرئيسية (Hero)', 'hero');
         <div class="fg">
           <label><i class="fas fa-language"></i> ملاحظة إضافية — English</label>
           <input type="text" name="note_en" value="<?= e($h['note_en'] ?? '') ?>" dir="ltr">
+        </div>
+      </div>
+
+      <div class="sep"></div>
+      <p style="font-weight:700;color:var(--primary);margin-bottom:1rem"><i class="fas fa-film"></i> فيديو خلفية الهيدر (Hero)</p>
+      <?php $curVid = $h['bg_video'] ?? ''; $isUrlVid = $curVid && preg_match('#^https?://#', $curVid); ?>
+      <?php if ($curVid): ?>
+        <div style="margin-bottom:1rem;padding:.75rem 1rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+          <i class="fas fa-circle-play" style="color:var(--accent);font-size:1.1rem"></i>
+          <span style="font-size:.85rem">الفيديو الحالي: <code style="direction:ltr;display:inline-block"><?= e($curVid) ?></code></span>
+          <a href="<?= e($isUrlVid ? $curVid : img_url($curVid)) ?>" target="_blank" class="btn btn-outline btn-xs"><i class="fas fa-eye"></i> عرض</a>
+          <label style="font-size:.82rem;color:var(--danger);display:inline-flex;align-items:center;gap:.35rem;margin-inline-start:auto;cursor:pointer">
+            <input type="checkbox" name="remove_video" value="1"> إزالة الفيديو والعودة للخلفية الافتراضية
+          </label>
+        </div>
+      <?php endif; ?>
+      <div class="form-grid">
+        <div class="fg">
+          <label><i class="fas fa-upload"></i> رفع فيديو جديد (mp4 / webm — حتى 60MB)</label>
+          <input type="file" name="bg_video_file" accept="video/mp4,video/webm">
+          <small style="color:var(--warning)"><i class="fas fa-triangle-exclamation"></i> عند رفع فيديو جديد يُحذف الفيديو القديم تلقائياً للحفاظ على المساحة.</small>
+        </div>
+        <div class="fg">
+          <label><i class="fas fa-link"></i> أو رابط فيديو مباشر (mp4)</label>
+          <input type="text" name="bg_video_url" dir="ltr" placeholder="https://example.com/video.mp4"
+                 value="<?= e($isUrlVid ? $curVid : '') ?>">
+          <small>إن رفعت ملفاً فله الأولوية على الرابط.</small>
         </div>
       </div>
 

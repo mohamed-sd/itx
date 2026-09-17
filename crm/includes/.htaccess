@@ -1,0 +1,2 @@
+# Internal PHP includes — never accessed directly over HTTP
+Require all denied

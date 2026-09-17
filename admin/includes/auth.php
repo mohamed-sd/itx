@@ -191,6 +191,26 @@ function handle_image_input(
     return $existingVal;
 }
 
+function upload_video(array $file, string $subdir = 'uploads'): string {
+    $allowed = ['video/mp4', 'video/webm', 'video/ogg'];
+    $finfo   = new \finfo(FILEINFO_MIME_TYPE);
+    $mime    = $finfo->file($file['tmp_name']);
+
+    if (!in_array($mime, $allowed)) throw new \RuntimeException('صيغة الفيديو غير مدعومة (mp4 أو webm فقط)');
+    if ($file['size'] > 60 * 1024 * 1024) throw new \RuntimeException('حجم الفيديو يتجاوز 60MB');
+
+    $ext  = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if (!in_array($ext, ['mp4', 'webm', 'ogg'])) $ext = 'mp4';
+    $name = uniqid('vid_', true) . '.' . $ext;
+    $dir  = ROOT_PATH . '/' . trim($subdir, '/') . '/';
+
+    if (!is_dir($dir)) mkdir($dir, 0755, true);
+    if (!move_uploaded_file($file['tmp_name'], $dir . $name)) {
+        throw new \RuntimeException('فشل في رفع الفيديو');
+    }
+    return trim($subdir, '/') . '/' . $name;
+}
+
 function upload_file(array $file, string $subdir = 'uploads'): string {
     $allowed = ['image/jpeg','image/png','image/gif','image/webp','image/svg+xml'];
     $finfo   = new \finfo(FILEINFO_MIME_TYPE);
@@ -199,7 +219,10 @@ function upload_file(array $file, string $subdir = 'uploads'): string {
     if (!in_array($mime, $allowed)) throw new \RuntimeException('نوع الملف غير مسموح به');
     if ($file['size'] > 6 * 1024 * 1024) throw new \RuntimeException('حجم الملف يتجاوز 6MB');
 
-    $ext  = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    // Force the extension from the validated MIME (never trust the client filename)
+    // so a polyglot cannot be stored as .php/.phtml/etc.
+    $extMap = ['image/jpeg'=>'jpg','image/png'=>'png','image/gif'=>'gif','image/webp'=>'webp','image/svg+xml'=>'svg'];
+    $ext  = $extMap[$mime] ?? 'bin';
     $name = uniqid('img_', true) . '.' . $ext;
     $dir  = ROOT_PATH . '/' . trim($subdir, '/') . '/';
 

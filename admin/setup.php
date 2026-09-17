@@ -47,7 +47,7 @@ $logoUrl = img_url(get_setting('site_logo', 'logo.jpeg'));
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>إعداد الحساب الإداري — ITX</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="<?= admin_prefix() ?>/assets/admin.css">
+<link rel="stylesheet" href="<?= admin_prefix() ?>/assets/admin.css?v=<?= @filemtime(ADMIN_PATH.'/assets/admin.css') ?>">
 </head>
 <body>
 <div class="login-page">

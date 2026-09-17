@@ -40,6 +40,9 @@ $h_note_en  = $hero['note_en']      ?? '';
 $h_btn1t_en = $hero['btn1_text_en'] ?? '';
 $h_btn2t_en = $hero['btn2_text_en'] ?? '';
 
+// Hero background promo video (uploaded file path or external URL). Empty = no video.
+$h_video = site_media_url($hero['bg_video'] ?? '');
+
 // Highlight the brand name inside the headline with the orange gradient.
 $needle  = e($site_name);
 $grad = function (string $title) use ($needle): string {
@@ -126,8 +129,14 @@ $og_image_url  = preg_match('#^https?://#', $logo_url) ? $logo_url : $base_url .
 <?php require __DIR__ . '/partials/nav.php'; ?>
 
 <!-- ============================ HERO ============================ -->
-<section class="hero" id="home">
+<section class="hero<?= $h_video ? ' has-video' : '' ?>" id="home">
   <div class="hero-bg">
+    <?php if ($h_video): ?>
+      <video class="hero-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+        <source src="<?= e($h_video) ?>" type="video/mp4">
+      </video>
+      <div class="hero-video-overlay"></div>
+    <?php endif; ?>
     <div class="hero-grid-lines"></div>
     <div class="hero-blob b1"></div>
     <div class="hero-blob b2"></div>

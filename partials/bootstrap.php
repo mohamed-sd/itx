@@ -47,6 +47,11 @@ $pdo   = null;
 $db_ok = false;
 try { $pdo = getDB(); $db_ok = true; } catch (\Throwable $ex) {}
 
+/* ── Visitor analytics (fail-safe, never blocks the page) ──── */
+if ($db_ok) {
+    try { require __DIR__ . '/track_visit.php'; } catch (\Throwable $ex) {}
+}
+
 /* ── Settings ──────────────────────────────────────────────── */
 $settings = [];
 if ($db_ok) {

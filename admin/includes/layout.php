@@ -1,6 +1,9 @@
 <?php
 $_NAV = [
   ['p'=>'dashboard',  'i'=>'fas fa-tachometer-alt', 'l'=>'لوحة التحكم',        's'=>null],
+  ['p'=>'analytics',  'i'=>'fas fa-chart-line',      'l'=>'تحليلات الزوّار',    's'=>null],
+  ['p'=>null,         'i'=>null,                     'l'=>'إدارة العملاء (CRM)','s'=>'section'],
+  ['p'=>'employees',  'i'=>'fas fa-users-gear',      'l'=>'موظفو CRM',          's'=>null],
   ['p'=>null,         'i'=>null,                     'l'=>'المحتوى',            's'=>'section'],
   ['p'=>'settings',   'i'=>'fas fa-cog',             'l'=>'الإعدادات العامة',   's'=>null],
   ['p'=>'hero',       'i'=>'fas fa-rocket',           'l'=>'الصفحة الرئيسية',   's'=>null],
@@ -33,7 +36,7 @@ function layout_start(string $title, string $currentPage): void {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title><?= e($title) ?> — لوحة تحكم ITX</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="<?= $adminHref ?>/assets/admin.css">
+<link rel="stylesheet" href="<?= $adminHref ?>/assets/admin.css?v=<?= @filemtime(ADMIN_PATH.'/assets/admin.css') ?>">
 </head>
 <body>
 <div class="admin-wrap">
