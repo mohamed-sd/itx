@@ -20,7 +20,11 @@ $_NAV = [
   ['p'=>'image_cleaner', 'i'=>'fas fa-broom',            'l'=>'منظف الصور',             's'=>null],
 ];
 
-function layout_start(string $title, string $currentPage): void {
+/**
+ * @param string[] $extraCss Page-specific stylesheets under admin/assets/,
+ *                           e.g. ['editor.css']. Cache-busted like admin.css.
+ */
+function layout_start(string $title, string $currentPage, array $extraCss = []): void {
     global $_NAV;
     $logo    = get_setting('site_logo', 'logo.jpeg');
     $siteName= get_setting('site_name', 'ITX');
@@ -37,6 +41,9 @@ function layout_start(string $title, string $currentPage): void {
 <title><?= e($title) ?> — لوحة تحكم ITX</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="<?= $adminHref ?>/assets/admin.css?v=<?= @filemtime(ADMIN_PATH.'/assets/admin.css') ?>">
+<?php foreach ($extraCss as $css): ?>
+<link rel="stylesheet" href="<?= $adminHref ?>/assets/<?= e($css) ?>?v=<?= @filemtime(ADMIN_PATH.'/assets/'.$css) ?>">
+<?php endforeach; ?>
 </head>
 <body>
 <div class="admin-wrap">

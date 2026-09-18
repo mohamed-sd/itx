@@ -1,0 +1,96 @@
+/* ============================================================
+   ITX Admin — visual (WYSIWYG) editor for article content
+   Self-contained: no external library, nothing fetched at runtime,
+   so it works unchanged under the site's strict CSP.
+   Paired with admin/assets/editor.js
+   ============================================================ */
+
+.itx-ed {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  overflow: hidden;
+}
+.itx-ed.is-focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,122,26,.12); }
+
+/* ── Toolbar ─────────────────────────────────────────────── */
+.itx-ed-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 2px;
+  padding: 6px; background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 3;
+}
+.itx-ed-bar button {
+  min-width: 32px; height: 32px; padding: 0 8px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  border: 1px solid transparent; border-radius: 8px;
+  background: transparent; color: var(--txt);
+  font-family: inherit; font-size: .82rem; font-weight: 600;
+  cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+}
+.itx-ed-bar button:hover { background: #fff; border-color: var(--border); color: var(--primary); }
+.itx-ed-bar button.on   { background: var(--primary); border-color: var(--primary); color: #fff; }
+.itx-ed-bar button:disabled { opacity: .4; cursor: not-allowed; }
+.itx-ed-bar .sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+.itx-ed-bar .spacer { flex: 1 1 auto; }
+.itx-ed-bar .src-btn.on { background: var(--accent); border-color: var(--accent); }
+
+/* ── Editable surface — mirrors the public .article-body ─── */
+.itx-ed-area {
+  min-height: 340px; max-height: 70vh; overflow-y: auto;
+  padding: 20px 22px;
+  font-size: 1rem; line-height: 1.95; color: var(--txt);
+  outline: none;
+}
+.itx-ed-area:empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted); pointer-events: none;
+}
+.itx-ed-area > * { margin-bottom: 1.05rem; }
+.itx-ed-area > *:last-child { margin-bottom: 0; }
+.itx-ed-area h2 { font-size: 1.45rem; font-weight: 700; color: var(--primary); margin: 1.7rem 0 .7rem; }
+.itx-ed-area h3 { font-size: 1.18rem; font-weight: 700; color: var(--primary); margin: 1.4rem 0 .5rem; }
+.itx-ed-area a  { color: var(--accent); text-decoration: underline; }
+.itx-ed-area ul, .itx-ed-area ol { padding-inline-start: 1.5rem; }
+.itx-ed-area li { margin-bottom: .45rem; }
+.itx-ed-area img { max-width: 100%; height: auto; border-radius: var(--radius); margin-block: 1.2rem; }
+.itx-ed-area blockquote {
+  border-inline-start: 4px solid var(--accent);
+  background: var(--bg); padding: .9rem 1.2rem;
+  border-radius: 0 8px 8px 0; color: var(--primary);
+}
+.itx-ed-area code {
+  font-family: Consolas, "Courier New", monospace;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: .12rem .4rem; font-size: .9em;
+}
+.itx-ed-area hr { border: none; border-top: 1px solid var(--border); }
+
+/* ── Raw HTML source view ────────────────────────────────── */
+.itx-ed-src {
+  display: none; width: 100%; min-height: 340px; max-height: 70vh;
+  padding: 18px 20px; border: none; outline: none; resize: vertical;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: .84rem; line-height: 1.7; color: var(--txt);
+  direction: ltr; text-align: left;
+}
+.itx-ed.src-mode .itx-ed-area { display: none; }
+.itx-ed.src-mode .itx-ed-src  { display: block; }
+.itx-ed.src-mode .itx-ed-bar button:not(.src-btn) { opacity: .4; pointer-events: none; }
+
+/* ── Footer hint ─────────────────────────────────────────── */
+.itx-ed-foot {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 6px 12px; background: var(--bg);
+  border-top: 1px solid var(--border);
+  font-size: .74rem; color: var(--muted);
+}
+
+/* The original textarea is kept in the DOM (it carries the POST
+   value) but hidden once the editor takes over. */
+.itx-ed-source-hidden { display: none !important; }
+
+@media (max-width: 640px) {
+  .itx-ed-bar button span { display: none; }
+  .itx-ed-area { padding: 16px; }
+}

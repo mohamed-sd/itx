@@ -115,7 +115,7 @@ $editPost = !empty($_GET['edit_post']) ? db_row("SELECT * FROM blog_posts WHERE 
 $editCat  = !empty($_GET['edit_cat'])  ? db_row("SELECT * FROM blog_categories WHERE id=?", [(int)$_GET['edit_cat']]) : null;
 $activeTab = $_GET['tab'] ?? 'posts';
 
-layout_start('المدونة', 'blog');
+layout_start('المدونة', 'blog', ['editor.css']);
 ?>
 <style>
 .blog-thumb-sm{width:60px;height:42px;object-fit:cover;border-radius:6px;border:1px solid var(--border)}
@@ -352,12 +352,12 @@ layout_start('المدونة', 'blog');
           <!-- Content -->
           <div class="fg full">
             <label>محتوى المقال <span class="req">*</span></label>
-            <textarea name="content" rows="18" style="font-family:monospace;font-size:.84rem"><?= htmlspecialchars($editPost['content'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
-            <small>يمكنك استخدام HTML: &lt;h2&gt; &lt;h3&gt; &lt;p&gt; &lt;ul&gt; &lt;li&gt; &lt;strong&gt; &lt;a&gt; &lt;img&gt;</small>
+            <textarea name="content" data-editor rows="18" dir="rtl" style="font-family:monospace;font-size:.84rem"><?= htmlspecialchars($editPost['content'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+            <small>اكتب المقال بشكل طبيعي — أزرار التنسيق أعلاه تتكفّل بالباقي. زر <b>HTML</b> يعرض الكود الناتج لمن يريد تعديله يدوياً.</small>
           </div>
           <div class="fg full">
             <label><i class="fas fa-language"></i> محتوى المقال — English</label>
-            <textarea name="content_en" rows="18" dir="ltr" style="font-family:monospace;font-size:.84rem"><?= htmlspecialchars($editPost['content_en'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+            <textarea name="content_en" data-editor rows="18" dir="ltr" style="font-family:monospace;font-size:.84rem"><?= htmlspecialchars($editPost['content_en'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
             <small>اتركه فارغاً إن لم ترغب بترجمة هذا المقال — سيبقى بالعربية عند تبديل اللغة</small>
           </div>
 
@@ -467,5 +467,8 @@ document.addEventListener('DOMContentLoaded', () => openModal('postModal'));
 document.addEventListener('DOMContentLoaded', () => openModal('bcatModal'));
 <?php endif; ?>
 </script>
+
+<script>window.ITX_ED = { upload: '<?= admin_prefix() ?>/upload.php' };</script>
+<script src="<?= admin_prefix() ?>/assets/editor.js?v=<?= @filemtime(ADMIN_PATH.'/assets/editor.js') ?>"></script>
 
 <?php layout_end(); ?>
