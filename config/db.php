@@ -1,13 +1,32 @@
 <?php
 // ─────────────────────────────────────────────
-//  Database configuration — edit these values
+//  Database configuration — shared defaults
+//
+//  These values are committed to git, so they must stay the same
+//  for everyone. To change any of them on YOUR machine only,
+//  create this git-ignored file:
+//
+//      config/db.local.php
+//
+//  returning just the keys you need to override, e.g. on XAMPP
+//  (whose MariaDB listens on 3306 instead of WAMP's 3307):
+//
+//      <?php return ['DB_PORT' => 3306];
+//
+//  Never edit the defaults below to suit one machine — that is
+//  what keeps breaking the other developer's setup after a pull.
 // ─────────────────────────────────────────────
-define('DB_HOST',    '127.0.0.1');
-define('DB_PORT',    3307);        // WAMP MariaDB port (MySQL default is 3306)
-define('DB_USER',    'root');
-define('DB_PASS',    '');          // WAMP default: empty password
-define('DB_NAME',    'itx_db');
-define('DB_CHARSET', 'utf8mb4');
+$db_local = is_file(__DIR__ . '/db.local.php') ? require __DIR__ . '/db.local.php' : [];
+if (!is_array($db_local)) $db_local = [];
+
+define('DB_HOST',    $db_local['DB_HOST']    ?? '127.0.0.1');
+define('DB_PORT',    (int)($db_local['DB_PORT'] ?? 3307));  // WAMP MariaDB port (XAMPP default is 3306)
+define('DB_USER',    $db_local['DB_USER']    ?? 'root');
+define('DB_PASS',    $db_local['DB_PASS']    ?? '');        // WAMP/XAMPP default: empty password
+define('DB_NAME',    $db_local['DB_NAME']    ?? 'itx_db');
+define('DB_CHARSET', $db_local['DB_CHARSET'] ?? 'utf8mb4');
+
+unset($db_local);
 
 /**
  * Apply baseline security headers for all public/admin pages that include this file.

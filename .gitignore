@@ -1,3 +1,6 @@
 
 # local backups
 *.bak
+
+# per-machine config (never commit)
+config/db.local.php
